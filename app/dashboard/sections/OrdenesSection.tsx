@@ -28,11 +28,11 @@ function OrderCard({ order }: { order: Order }) {
     <div className="card overflow-hidden">
       <button className="w-full flex items-center justify-between px-5 py-3 text-left" style={{ background:"#1e1e2e" }} onClick={() => setOpen(x=>!x)}>
         <div className="flex items-center gap-3">
-          <span className="font-black text-sm" style={{ fontFamily:"var(--font-syne)" }}>{order.number}</span>
+          <span className="font-black text-sm" style={{ fontFamily:"var(--font-syne)" }}>{order.order_number}</span>
           <OrderBadge status={order.status} />
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs hidden sm:block" style={{ color:"#3d3b5a" }}>{order.fecha}</span>
+          <span className="text-xs hidden sm:block" style={{ color:"#3d3b5a" }}>{new Date(order.created_at).toLocaleDateString()}</span>
           <ChevronDown size={14} color="#8884aa" style={{ transform:open?"rotate(180deg)":"", transition:"0.2s" }} />
         </div>
       </button>
@@ -42,18 +42,18 @@ function OrderCard({ order }: { order: Order }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
-                style={{ background:`linear-gradient(135deg,${order.cliente.gradient[0]},${order.cliente.gradient[1]})` }}>
-                {order.cliente.initials}
+                style={{ background:`linear-gradient(135deg,${order.client_grad_from},${order.client_grad_to})` }}>
+                {order.client_initials}
               </div>
               <div>
-                <div className="font-bold text-sm">{order.cliente.name}</div>
-                <div className="text-xs mt-0.5" style={{ color:"#3d3b5a" }}>{order.cliente.phone}</div>
+                <div className="font-bold text-sm">{order.client_name}</div>
+                <div className="text-xs mt-0.5" style={{ color:"#3d3b5a" }}>{order.client_phone}</div>
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
               {order.items.map((it,i) => (
                 <div key={i} className="flex items-center gap-2 text-sm">
-                  <div className="w-5 h-5 rounded flex-shrink-0" style={{ background:`linear-gradient(135deg,${it.gradient[0]},${it.gradient[1]})` }} />
+                  <div className="w-5 h-5 rounded flex-shrink-0" style={{ background:`linear-gradient(135deg,${it.gradientFrom},${it.gradientTo})` }} />
                   <span style={{ color:"#8884aa" }}>{it.productName} · {it.variant}</span>
                 </div>
               ))}
@@ -62,8 +62,8 @@ function OrderCard({ order }: { order: Order }) {
               <div className="font-black text-xl" style={{ fontFamily:"var(--font-syne)", color:order.total<0?"#fca5a5":"#c4b5fd" }}>
                 {order.total<0?"-":""}{formatCOP(Math.abs(order.total))}
               </div>
-              <div className="text-xs mt-1" style={{ color:"#8884aa" }}>{order.metodo}</div>
-              <div className="text-xs" style={{ color:"#3d3b5a" }}>📍 {order.direccion}</div>
+              <div className="text-xs mt-1" style={{ color:"#8884aa" }}>{order.payment_method}</div>
+              <div className="text-xs" style={{ color:"#3d3b5a" }}>📍 {order.address}</div>
             </div>
           </div>
 
@@ -119,11 +119,11 @@ export default function OrdenesSection() {
   let filtered = orders.filter(o => {
     const statusOk = orderFilter==="all" || o.status===orderFilter;
     const q = search.toLowerCase();
-    const searchOk = !q || o.number.toLowerCase().includes(q) || o.cliente.name.toLowerCase().includes(q) || o.items.some(i=>i.productName.toLowerCase().includes(q));
+    const searchOk = !q || o.order_number.toLowerCase().includes(q) || o.client_name.toLowerCase().includes(q) || o.items.some(i=>i.productName.toLowerCase().includes(q));
     return statusOk && searchOk;
   });
-  if (sort==="newest")  filtered=[...filtered].sort((a,b)=>b.number.localeCompare(a.number));
-  if (sort==="oldest")  filtered=[...filtered].sort((a,b)=>a.number.localeCompare(b.number));
+  if (sort==="newest")  filtered=[...filtered].sort((a,b)=>b.order_number.localeCompare(a.order_number));
+  if (sort==="oldest")  filtered=[...filtered].sort((a,b)=>a.order_number.localeCompare(b.order_number));
   if (sort==="highest") filtered=[...filtered].sort((a,b)=>Math.abs(b.total)-Math.abs(a.total));
   if (sort==="lowest")  filtered=[...filtered].sort((a,b)=>Math.abs(a.total)-Math.abs(b.total));
 

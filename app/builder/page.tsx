@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { TypingIndicator } from "@/components/ui";
 import { Send, ArrowLeft, Eye, Smartphone, Monitor, Rocket } from "lucide-react";
-import type { Message, BuilderConfig, StoreLegacy, ProductLegacy } from "@/types";
+import type { Message, BuilderConfig, BuilderProduct, StoreLegacy, ProductLegacy } from "@/types";
 
 const BUILDER_SYSTEM = `Eres el Agente Constructor de Maket AI, experto en crear tiendas online.
 Tu trabajo: hacer preguntas naturales y recopilar información para construir la tienda perfecta.

@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -27,9 +28,9 @@ export default function Sidebar({ collapsed }: SidebarProps) {
   const pathname = usePathname();
   const supabase = createClient();
   const router   = useRouter();
-  const [user, setUser] = require("react").useState<any>(null);
+  const [user, setUser] = useState<any>(null);
 
-  require("react").useEffect(() => {
+  useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
   }, []);
 

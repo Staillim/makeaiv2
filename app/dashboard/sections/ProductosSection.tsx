@@ -2,7 +2,7 @@
 import { useState, useMemo } from "react";
 import { SectionHead, EmptyState } from "@/components/ui";
 import { Search, LayoutGrid, List, Plus } from "lucide-react";
-import { MOCK_STORE, formatCOP } from "@/lib/data";
+import { MOCK_PRODUCTS, formatCOP } from "@/lib/data";
 import type { Product } from "@/types";
 import { cn, stockColor } from "@/lib/utils";
 
@@ -26,7 +26,7 @@ function TableRow({ p }: { p:Product }) {
     <div className="grid gap-3 px-4 py-3.5 transition-all duration-200" style={{ gridTemplateColumns:"2fr .8fr 1fr .75fr .9fr .8fr", borderTop:"1px solid rgba(255,255,255,0.04)" }}
       onMouseEnter={e=>(e.currentTarget.style.background="#1e1e2e")} onMouseLeave={e=>(e.currentTarget.style.background="")}>
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl flex-shrink-0" style={{ background:`linear-gradient(135deg,${p.gradient[0]},${p.gradient[1]})` }}/>
+        <div className="w-8 h-8 rounded-xl flex-shrink-0" style={{ background:`linear-gradient(135deg,${p.gradient_from},${p.gradient_to})` }}/>
         <div>
           <div className="font-semibold text-sm">{p.name}</div>
           <div className="text-xs mt-0.5" style={{ color:"#3d3b5a" }}>SKU: {p.sku} · {p.variants.join(", ")}</div>
@@ -51,7 +51,7 @@ function TableRow({ p }: { p:Product }) {
 function ProductCard({ p }: { p:Product }) {
   return (
     <div className="card card-hover overflow-hidden">
-      <div className="h-28 relative" style={{ background:`linear-gradient(135deg,${p.gradient[0]},${p.gradient[1]})` }}>
+      <div className="h-28 relative" style={{ background:`linear-gradient(135deg,${p.gradient_from},${p.gradient_to})` }}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-12 h-12 rounded-xl" style={{ background:"rgba(255,255,255,0.25)", backdropFilter:"blur(4px)", border:"1px solid rgba(255,255,255,0.35)" }}/>
         </div>
@@ -81,7 +81,7 @@ export default function ProductosSection() {
   const [catFilter, setCatFilter] = useState("all");
   const [view, setView] = useState<"table"|"cards">("table");
 
-  const products = MOCK_STORE.products;
+  const products = MOCK_PRODUCTS;
   const stockOk  = products.filter(p=>p.stock>5).length;
   const stockLow = products.filter(p=>p.stock>0&&p.stock<=5).length;
   const stockOut = products.filter(p=>p.stock===0).length;

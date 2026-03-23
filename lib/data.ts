@@ -1,7 +1,7 @@
-import type { Store, Order, Analytics } from "@/types";
+import type { StoreLegacy, Product, Order, Analytics } from "@/types";
 
 // Datos de ejemplo vacíos - serán reemplazados por datos reales de Supabase
-export const MOCK_STORE: Store = {
+export const MOCK_STORE: StoreLegacy = {
   id: "ejemplo",
   name: "Mi Tienda",
   slug: "mi-tienda",
@@ -15,6 +15,8 @@ export const MOCK_STORE: Store = {
   createdAt: new Date().toISOString().split('T')[0],
   products: [],
 };
+
+export const MOCK_PRODUCTS: Product[] = [];
 
 export const MOCK_ORDERS: Order[] = [];
 

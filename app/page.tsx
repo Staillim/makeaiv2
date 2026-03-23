@@ -405,8 +405,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {PRICING.map((p, i) => (
               <InView key={p.name} delay={i * 0.1}>
-                <div className={`card p-7 flex flex-col h-full relative overflow-hidden ${p.highlight ? "ring-2" : ""}`}
-                  style={p.highlight ? { ringColor: "#7c5cfc", borderColor: "rgba(124,92,252,0.5)", background: "linear-gradient(145deg,rgba(124,92,252,0.08),rgba(244,63,142,0.05))" } : {}}>
+                <div className={`card p-7 flex flex-col h-full relative overflow-hidden ${p.highlight ? "ring-2 ring-purple-500/50" : ""}`}
+                  style={p.highlight ? { borderColor: "rgba(124,92,252,0.5)", background: "linear-gradient(145deg,rgba(124,92,252,0.08),rgba(244,63,142,0.05))" } : {}}>
                   {p.highlight && (
                     <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: "linear-gradient(90deg,#7c5cfc,#f43f8e)" }} />
                   )}

@@ -298,6 +298,15 @@ export interface Message {
 }
 
 // ── Builder config ────────────────────────────────
+export interface BuilderProduct {
+  n?: string; // short for name
+  p?: string | number; // short for price  
+  name?: string;
+  price?: number;
+  d?: string; // short for description
+  description?: string;
+}
+
 export interface BuilderConfig {
   name: string;
   type: Store["type"];
@@ -306,5 +315,5 @@ export interface BuilderConfig {
   columns: number;
   style: Store["style"];
   tagline: string;
-  products: Partial<Product>[];
+  products: BuilderProduct[];
 }
