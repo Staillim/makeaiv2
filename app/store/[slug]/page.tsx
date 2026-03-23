@@ -8,7 +8,7 @@ import {
   ShoppingCart, MessageCircle, X, Send, Search, Truck, Lock, RotateCcw, Star,
   Bot, Package, ShoppingBag, Cpu, Utensils, Sparkles, Home, Heart, Flame,
   Clock, Tag, ChevronRight, Plus, Minus, Zap, Eye, Filter, ChevronDown,
-  MapPin, CheckCircle, Bike,
+  MapPin, CheckCircle, Bike, ArrowLeft,
 } from "lucide-react";
 import { formatCOP, STORE_TEMPLATES } from "@/lib/data";
 import type { StoreTemplate } from "@/lib/data";
@@ -142,125 +142,292 @@ function ProductModal({ p, pc, tpl, onClose, onAddToCart }: {
   const [qty, setQty] = useState(1);
   const [size, setSize] = useState<string>("M");
   const [color, setColor] = useState<string>("Negro");
+  const [activeImg, setActiveImg] = useState(0);
+
+  const isFashion = p.category === "ropa" || p.category === "beauty";
+  const imgs = p.image ? [p.image, p.image, p.image, p.image] : [];
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)" }}
-      onClick={onClose}>
-      <div className="w-full sm:max-w-2xl max-h-[95vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl"
-        style={{ background: tpl.cardBg, color: tpl.cardColor }}
-        onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[100] flex flex-col"
+      style={{ background: tpl.pageBg, color: tpl.pageColor }}>
 
-        <div className="flex items-center justify-between p-4 pb-0">
-          <p className="text-xs font-semibold" style={{ color: pc }}>Detalle del producto</p>
-          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ background: "rgba(0,0,0,0.08)" }}>
-            <X size={16} />
-          </button>
-        </div>
+      {/* ── Sticky Header ── */}
+      <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+        style={{ background: tpl.headerBg, borderBottom: `1px solid ${tpl.headerBorderColor}`, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
+        <button onClick={onClose}
+          className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-opacity hover:opacity-70"
+          style={{ background: "rgba(128,128,128,0.12)" }}>
+          <ArrowLeft size={18} color={tpl.headerColor} />
+        </button>
+        <span className="font-bold text-sm flex-1 truncate" style={{ color: tpl.headerColor }}>{p.name}</span>
+        <button className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "rgba(128,128,128,0.12)" }}>
+          <Heart size={16} color={tpl.headerColor} />
+        </button>
+        <button className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "rgba(128,128,128,0.12)" }}>
+          <ShoppingCart size={16} color={tpl.headerColor} />
+        </button>
+      </div>
 
-        <div className="p-4 flex flex-col sm:flex-row gap-5">
-          <div className="flex-shrink-0 sm:w-64">
-            <div className="rounded-xl overflow-hidden flex items-center justify-center"
-              style={{ height: 260, background: tpl.cardBg, border: tpl.cardBorder || "1px solid rgba(0,0,0,0.08)" }}>
-              {p.image ? (
-                <img src={p.image} alt={p.name} className="w-full h-full object-contain p-3" />
-              ) : (
-                <StoreIcon type="ropa" size={80} color="#ddd" />
+      {/* ── Scrollable Body ── */}
+      <div className="flex-1 overflow-y-auto">
+
+        {/* Image Gallery */}
+        <div style={{ background: tpl.cardBg }}>
+          {/* Main image */}
+          <div className="relative" style={{ height: 340 }}>
+            {imgs.length > 0 ? (
+              <img src={imgs[activeImg]} alt={p.name} className="w-full h-full"
+                style={{ objectFit: isFashion ? "cover" : "contain", padding: isFashion ? 0 : 32, background: tpl.cardBg }} />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center" style={{ background: tpl.cardBg }}>
+                <StoreIcon type={p.category} size={80} color="#ddd" />
+              </div>
+            )}
+            {/* Overlay gradient */}
+            {isFashion && <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.3) 0%, transparent 60%)" }} />}
+
+            {/* Badges top-left */}
+            <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+              {meta.isFlash && (
+                <span className="px-2.5 py-1 rounded-full text-xs font-black text-white flex items-center gap-1"
+                  style={{ background: "#e63946" }}><Flame size={11} />-{meta.discountPct}%</span>
+              )}
+              {meta.isNew && !meta.isFlash && (
+                <span className="px-2.5 py-1 rounded-full text-xs font-bold text-white" style={{ background: pc }}>NUEVO</span>
               )}
             </div>
+
+            {/* Slide counter */}
+            {imgs.length > 1 && (
+              <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-xs font-semibold text-white"
+                style={{ background: "rgba(0,0,0,0.55)" }}>{activeImg + 1} / {imgs.length}</div>
+            )}
           </div>
 
-          <div className="flex-1 flex flex-col gap-3">
-            <div className="flex gap-1.5 flex-wrap">
-              {meta.isNew && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white" style={{ background: pc }}>NUEVO</span>}
-              {meta.isFlash && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white flex items-center gap-1" style={{ background: "#e63946" }}><Flame size={9}/>OFERTA</span>}
+          {/* Thumbnail strip */}
+          {imgs.length > 0 && (
+            <div className="flex gap-2.5 px-4 py-3" style={{ borderBottom: `1px solid ${tpl.headerBorderColor}` }}>
+              {imgs.map((img, i) => (
+                <button key={i} onClick={() => setActiveImg(i)}
+                  className="flex-shrink-0 rounded-xl overflow-hidden transition-all"
+                  style={{ width: 62, height: 62, border: i === activeImg ? `2.5px solid ${pc}` : `1.5px solid ${tpl.headerBorderColor}` }}>
+                  <img src={img} alt="" className="w-full h-full"
+                    style={{ objectFit: isFashion ? "cover" : "contain", padding: isFashion ? 0 : 6, background: tpl.cardBg }} />
+                </button>
+              ))}
             </div>
+          )}
+        </div>
 
-            <h2 className="text-xl font-black leading-tight" style={{ fontFamily: "var(--font-jakarta)" }}>{p.name}</h2>
-            <StarRating value={meta.ratingVal} count={meta.reviewCount} />
+        {/* Product Info */}
+        <div className="px-4 pt-4 pb-2" style={{ background: tpl.pageBg }}>
 
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: "#e63946" }}>
-              <Eye size={13} /><span><strong>{meta.viewers}</strong> personas lo están viendo ahora</span>
+          {/* Badges row */}
+          <div className="flex gap-2 mb-3 flex-wrap">
+            {meta.isNew && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ background: pc }}>NUEVO</span>}
+            {meta.isFlash && <span className="px-2.5 py-1 rounded-full text-[11px] font-black text-white flex items-center gap-1" style={{ background: "#e63946" }}><Flame size={10} />OFERTA</span>}
+            {meta.isBestSeller && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold" style={{ background: "#f5c842", color: "#111" }}>⭐ MÁS VENDIDO</span>}
+          </div>
+
+          {/* Name */}
+          <h1 className="text-xl font-black leading-snug mb-2" style={{ color: tpl.cardColor }}>{p.name}</h1>
+
+          {/* Rating + social proof */}
+          <div className="flex items-center gap-4 mb-4 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <StarRating value={meta.ratingVal} count={meta.reviewCount} />
             </div>
+            <span className="text-xs flex items-center gap-1 font-semibold" style={{ color: "#e63946" }}>
+              <Eye size={12} /> {meta.viewers} personas viendo ahora
+            </span>
+          </div>
 
-            <div className="flex items-baseline gap-2 flex-wrap">
+          {/* Price block */}
+          <div className="rounded-2xl p-4 mb-4" style={{ background: `${pc}0d`, border: `1px solid ${pc}25` }}>
+            <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
               <span className="text-3xl font-black" style={{ color: tpl.cardPriceColor }}>{formatCOP(p.price)}</span>
               {meta.originalPrice && <>
                 <span className="text-sm line-through" style={{ color: "#bbb" }}>{formatCOP(meta.originalPrice)}</span>
-                <span className="px-2 py-0.5 rounded-full text-xs font-black text-white" style={{ background: "#e63946" }}>-{meta.discountPct}%</span>
+                <span className="px-2.5 py-1 rounded-full text-xs font-black text-white" style={{ background: "#e63946" }}>-{meta.discountPct}%</span>
               </>}
             </div>
-
             {meta.hasFreeShipping && (
-              <div className="flex items-center gap-1 text-xs font-semibold" style={{ color: "#2a9d5c" }}>
-                <Truck size={12} /> Envío gratis · Llega en 2-3 días
+              <div className="flex items-center gap-1.5 text-sm font-bold" style={{ color: "#2a9d5c" }}>
+                <Truck size={14} /> Envío gratis · Llega en 2-3 días hábiles
               </div>
             )}
+          </div>
 
-            <div>
-              <p className="text-xs font-bold mb-2">Talla: <span style={{ color: pc }}>{size}</span></p>
-              <div className="flex gap-2 flex-wrap">
+          {/* Seller trust */}
+          <div className="flex gap-2 mb-5 flex-wrap">
+            <span className="text-[11px] px-3 py-1.5 rounded-full font-bold flex items-center gap-1" style={{ background: `${pc}18`, color: pc }}>
+              <Star size={11} fill={pc} color={pc} /> Vendedor premium
+            </span>
+            <span className="text-[11px] px-3 py-1.5 rounded-full font-semibold flex items-center gap-1"
+              style={{ background: "rgba(128,128,128,0.07)", color: tpl.cardColor }}>
+              <Lock size={11} /> Compra protegida
+            </span>
+            <span className="text-[11px] px-3 py-1.5 rounded-full font-semibold flex items-center gap-1"
+              style={{ background: "rgba(42,157,92,0.1)", color: "#2a9d5c" }}>
+              <RotateCcw size={11} /> 30 días devolución
+            </span>
+          </div>
+
+          <div className="h-px mb-5" style={{ background: tpl.headerBorderColor }} />
+
+          {/* ── Size selector (fashion) ── */}
+          {isFashion && (
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-black" style={{ color: tpl.cardColor }}>
+                  Talla: <span style={{ color: pc }}>{size}</span>
+                </p>
+                <button className="text-xs font-semibold underline" style={{ color: pc }}>Guía de tallas →</button>
+              </div>
+              <div className="flex gap-2.5 flex-wrap">
                 {SIZES.map(s => (
                   <button key={s} onClick={() => setSize(s)}
-                    className="w-10 h-10 rounded-lg text-xs font-bold transition-all"
+                    className="w-12 h-12 rounded-xl text-sm font-bold transition-all"
                     style={{
-                      border: size === s ? `2px solid ${pc}` : "1.5px solid rgba(0,0,0,0.15)",
-                      background: size === s ? `${pc}15` : "transparent",
+                      border: size === s ? `2.5px solid ${pc}` : "1.5px solid rgba(128,128,128,0.2)",
+                      background: size === s ? `${pc}18` : "transparent",
                       color: size === s ? pc : tpl.cardColor,
                     }}>{s}</button>
                 ))}
               </div>
             </div>
+          )}
 
-            <div>
-              <p className="text-xs font-bold mb-2">Color: <span style={{ color: pc }}>{color}</span></p>
-              <div className="flex gap-2">
+          {/* ── Color selector (fashion) ── */}
+          {isFashion && (
+            <div className="mb-5">
+              <p className="text-sm font-black mb-3" style={{ color: tpl.cardColor }}>
+                Color: <span style={{ color: pc }}>{color}</span>
+              </p>
+              <div className="flex gap-3 flex-wrap">
                 {COLORS.map(c => (
-                  <button key={c.name} onClick={() => setColor(c.name)} title={c.name}
-                    className="w-7 h-7 rounded-full transition-all"
-                    style={{
-                      background: c.hex,
-                      border: color === c.name ? `2.5px solid ${pc}` : "2px solid rgba(0,0,0,0.15)",
-                      outline: color === c.name ? `2px solid ${pc}40` : "none",
-                      outlineOffset: 2,
-                    }} />
+                  <div key={c.name} className="text-center cursor-pointer" onClick={() => setColor(c.name)}>
+                    <div className="w-9 h-9 rounded-full mx-auto mb-1 transition-all"
+                      style={{
+                        background: c.hex,
+                        border: color === c.name ? `3px solid ${pc}` : "2px solid rgba(0,0,0,0.12)",
+                        outline: color === c.name ? `2px solid ${pc}50` : "none",
+                        outlineOffset: 2,
+                      }} />
+                    <p className="text-[10px]" style={{ color: tpl.cardColor }}>{c.name}</p>
+                  </div>
                 ))}
               </div>
             </div>
+          )}
 
-            {p.stock <= 5 && p.stock > 0 && (
-              <p className="text-xs font-bold" style={{ color: "#e63946" }}>¡Solo quedan {p.stock} unidades!</p>
-            )}
-
-            <div className="flex items-center gap-3 flex-wrap mt-1">
-              <div className="flex items-center rounded-xl overflow-hidden" style={{ border: "1.5px solid rgba(0,0,0,0.12)" }}>
-                <button onClick={() => setQty(q => Math.max(1, q-1))}
-                  className="w-9 h-9 flex items-center justify-center hover:opacity-70">
-                  <Minus size={14} />
-                </button>
-                <span className="w-8 text-center text-sm font-bold">{qty}</span>
-                <button onClick={() => setQty(q => Math.min(p.stock, q+1))}
-                  className="w-9 h-9 flex items-center justify-center hover:opacity-70">
-                  <Plus size={14} />
-                </button>
+          {/* ── Tech / General: specs table ── */}
+          {!isFashion && (
+            <div className="mb-5">
+              <p className="text-sm font-black mb-3" style={{ color: tpl.cardColor }}>Características</p>
+              <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${tpl.headerBorderColor}` }}>
+                {[["Marca","Premium Brand"],["Modelo","Edición 2026"],["Garantía","12 meses"],["Estado","Nuevo · Original"],["Incluye","Caja + accesorios + manual"]].map(([k,v],i) => (
+                  <div key={k} className="flex justify-between items-center px-4 py-3 text-sm"
+                    style={{ background: i%2===0 ? "transparent" : `${tpl.headerBorderColor}60`, borderBottom: i < 4 ? `1px solid ${tpl.headerBorderColor}` : "none" }}>
+                    <span className="font-medium" style={{ color: "#999" }}>{k}</span>
+                    <span className="font-bold" style={{ color: tpl.cardColor }}>{v}</span>
+                  </div>
+                ))}
               </div>
-              <button
-                onClick={() => { onAddToCart({ product: p, qty, size, color }); onClose(); }}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl font-bold text-sm text-white transition-opacity hover:opacity-90"
-                style={{ background: pc, minWidth: 160 }}>
-                <ShoppingCart size={16} /> Agregar al carrito
-              </button>
             </div>
-            <button
-              onClick={() => { onAddToCart({ product: p, qty, size, color }); onClose(); }}
-              className="w-full py-2.5 px-5 rounded-xl font-bold text-sm transition-opacity hover:opacity-90"
-              style={{ background: "#111", color: "#fff" }}>
-              Comprar ahora →
-            </button>
-            <p className="text-xs" style={{ color: "#aaa" }}>{p.description}</p>
+          )}
+
+          <div className="h-px mb-5" style={{ background: tpl.headerBorderColor }} />
+
+          {/* ── Description ── */}
+          <div className="mb-5">
+            <p className="text-sm font-black mb-3" style={{ color: tpl.cardColor }}>Descripción</p>
+            <p className="text-sm leading-relaxed" style={{ color: tpl.cardColor + "cc" }}>{p.description}</p>
+            {p.stock <= 5 && p.stock > 0 && (
+              <p className="text-sm font-bold mt-2" style={{ color: "#e63946" }}>¡Solo quedan {p.stock} unidades!</p>
+            )}
+          </div>
+
+          {/* ── Trust badges 2x2 grid ── */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {[
+              { ico: "🚚", title: "Envío gratis",    sub: "Llega en 2-3 días hábiles" },
+              { ico: "🔒", title: "Compra segura",   sub: "Protegida por Maket AI" },
+              { ico: "↩️", title: "30 días",         sub: "Devolución sin preguntas" },
+              { ico: "⭐", title: "Garantía",        sub: "12 meses incluida" },
+            ].map(b => (
+              <div key={b.title} className="flex gap-3 p-3 rounded-2xl items-start"
+                style={{ border: `1px solid ${tpl.headerBorderColor}` }}>
+                <span className="text-2xl leading-none flex-shrink-0">{b.ico}</span>
+                <div>
+                  <p className="text-xs font-bold" style={{ color: tpl.cardColor }}>{b.title}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: "#999" }}>{b.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── Reviews preview ── */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-black" style={{ color: tpl.cardColor }}>Reseñas</p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-2xl font-black" style={{ color: pc }}>{meta.ratingVal}</span>
+                <div>
+                  <StarRating value={meta.ratingVal} />
+                  <p className="text-[10px] mt-0.5" style={{ color: "#999" }}>{meta.reviewCount} reseñas</p>
+                </div>
+              </div>
+            </div>
+            {[["Ana M.", 5, "Excelente calidad, llegó muy rápido. Lo recomiendo totalmente."],
+              ["Carlos R.", 4, "Buen producto, tal cual la descripción. Envío puntual."],
+            ].map(([name, stars, text]) => (
+              <div key={String(name)} className="py-3" style={{ borderTop: `1px solid ${tpl.headerBorderColor}` }}>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                    style={{ background: pc }}>{String(name)[0]}</div>
+                  <div>
+                    <p className="text-xs font-bold" style={{ color: tpl.cardColor }}>{name}</p>
+                    <StarRating value={Number(stars)} />
+                  </div>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: tpl.cardColor + "bb" }}>{text}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </div>
+
+      {/* ── Fixed bottom bar ── */}
+      <div className="flex-shrink-0 px-4 py-3 flex items-center gap-3"
+        style={{ background: tpl.cardBg, borderTop: `2px solid ${tpl.headerBorderColor}`, boxShadow: "0 -6px 24px rgba(0,0,0,0.12)" }}>
+        {/* Qty stepper */}
+        <div className="flex items-center rounded-xl overflow-hidden flex-shrink-0"
+          style={{ border: "1.5px solid rgba(128,128,128,0.2)" }}>
+          <button onClick={() => setQty(q => Math.max(1, q-1))}
+            className="w-11 h-12 flex items-center justify-center text-xl font-bold hover:opacity-60 transition-opacity">
+            <Minus size={16} />
+          </button>
+          <span className="w-10 text-center font-black text-base" style={{ color: tpl.cardColor }}>{qty}</span>
+          <button onClick={() => setQty(q => Math.min(p.stock, q+1))}
+            className="w-11 h-12 flex items-center justify-center hover:opacity-60 transition-opacity">
+            <Plus size={16} />
+          </button>
+        </div>
+        {/* Agregar */}
+        <button
+          onClick={() => { onAddToCart({ product: p, qty, size, color }); onClose(); }}
+          className="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl font-black text-sm transition-opacity hover:opacity-90"
+          style={{ border: `2px solid ${pc}`, background: "transparent", color: pc }}>
+          <ShoppingCart size={16} /> Al carrito
+        </button>
+        {/* Comprar ahora */}
+        <button
+          onClick={() => { onAddToCart({ product: p, qty, size, color }); onClose(); }}
+          className="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl font-black text-sm text-white transition-opacity hover:opacity-90"
+          style={{ background: pc, boxShadow: `0 4px 18px ${pc}55` }}>
+          <Zap size={15} /> Comprar ya
+        </button>
       </div>
     </div>
   );

@@ -355,126 +355,219 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
     </div>
   );
 
-  // ── Product detail bottom-sheet panel ─────────────────────────────────────
-  const panel = detailProd ? (
-    <div style={{ position:"absolute", inset:0, zIndex:50, display:"flex", flexDirection:"column", justifyContent:"flex-end", background:"rgba(0,0,0,0.52)" }}
-      onClick={() => setDetailProd(null)}>
-      <div style={{ background: pTpl.cardBg, color: pTpl.cardColor, borderRadius:"12px 12px 0 0", maxHeight:"76%", overflowY:"auto" }}
-        onClick={e => e.stopPropagation()}>
-        {/* Handle bar */}
-        <div style={{ display:"flex", justifyContent:"center", padding:"8px 0 0" }}>
-          <div style={{ width:32, height:3, borderRadius:50, background:"rgba(128,128,128,0.3)" }} />
-        </div>
-        <div style={{ padding:"10px 12px 16px" }}>
-          {/* Header: thumb + name + price */}
-          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-            <div style={{ width:64, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
-              <img src={detailProd.img} alt={detailProd.n}
-                style={{ width:"100%", height:"100%", objectFit: isFood ? "cover" : "contain", padding: isFood ? 0 : 4, background: pTpl.cardBg }} />
-            </div>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:10, fontWeight:800, lineHeight:1.3, marginBottom:2, color: pTpl.cardColor }}>{detailProd.n}</div>
-              <div style={{ fontSize:14, fontWeight:900, color: pTpl.cardPriceColor }}>{detailProd.p}</div>
-              <div style={{ fontSize:7, color:"#f5a623", marginTop:2 }}>★★★★★ <span style={{ color: pTpl.pageMutedColor, fontWeight:400 }}>128 reseñas</span></div>
-            </div>
-            <button onClick={() => setDetailProd(null)}
-              style={{ width:20, height:20, borderRadius:"50%", border:"none", background:"rgba(128,128,128,0.15)", cursor:"pointer", fontSize:11, color: pTpl.cardColor, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:2 }}>✕</button>
+  // ── Full product detail PAGE (replaces store view when product clicked) ───
+  const detailPage = detailProd ? (
+    <div style={{ fontFamily:"'Inter',sans-serif", color: pTpl.pageColor, background: pTpl.pageBg, minHeight:"100%", display:"flex", flexDirection:"column" }}>
+
+      {/* ── Sticky Nav ── */}
+      <div style={{ padding:"9px 12px", display:"flex", alignItems:"center", gap:6, borderBottom:`1px solid ${pTpl.headerBorderColor}`, background: pTpl.headerBg, position:"sticky", top:0, zIndex:20, boxShadow:"0 1px 4px rgba(0,0,0,0.08)" }}>
+        <button onClick={() => setDetailProd(null)}
+          style={{ background:"transparent", border:"none", cursor:"pointer", color: pTpl.headerColor, fontSize:18, lineHeight:1, padding:"0 2px", fontWeight:700 }}>←</button>
+        <span style={{ fontWeight:700, fontSize:10, flex:1, color: pTpl.headerColor, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{detailProd.n}</span>
+        <span style={{ fontSize:13, cursor:"pointer", color: pTpl.headerColor }}>♡</span>
+        <span style={{ fontSize:13, cursor:"pointer", color: pTpl.headerColor }}>⋯</span>
+      </div>
+
+      {/* ── Image Gallery ── */}
+      <div style={{ background: pTpl.cardBg, borderBottom:`1px solid ${pTpl.headerBorderColor}` }}>
+        {/* Main image */}
+        <div style={{ position:"relative", height: mode==="mobile" ? 200 : 240, overflow:"hidden", background: pTpl.cardBg }}>
+          <img src={detailProd.img} alt={detailProd.n}
+            style={{ width:"100%", height:"100%", objectFit: isFood||isFashion ? "cover" : "contain", padding: isFood||isFashion ? 0 : 24, background: pTpl.cardBg }} />
+          {/* Overlay for food/fashion */}
+          {(isFood||isFashion) && <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%)" }} />}
+          {/* Discount badge */}
+          <div style={{ position:"absolute", top:8, left:8, display:"flex", flexDirection:"column", gap:3 }}>
+            <span style={{ padding:"2px 8px", borderRadius:50, fontSize:7, fontWeight:900, color:"#fff", background:"#e63946" }}>-25%</span>
+            {isFood && <span style={{ padding:"2px 7px", borderRadius:50, fontSize:6, fontWeight:800, color:"#111", background:"#f5c842" }}>🔥 Popular</span>}
+            {!isFood && <span style={{ padding:"2px 7px", borderRadius:50, fontSize:6, fontWeight:700, color:"#fff", background: pc }}>NUEVO</span>}
           </div>
-          <div style={{ borderTop:`1px solid ${pTpl.headerBorderColor}`, marginBottom:10 }} />
-
-          {/* ── FOOD options ── */}
-          {isFood && (
-            <>
-              <div style={{ marginBottom:8 }}>
-                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:4 }}>Tamaño</div>
-                <div style={{ display:"flex", gap:4 }}>
-                  {["Personal","Mediano","Grande"].map(s => (
-                    <button key={s} onClick={() => setDetailFoodSize(s)}
-                      style={{ flex:1, padding:"4px 2px", borderRadius:6, fontSize:7, fontWeight:700, cursor:"pointer",
-                        border: detailFoodSize===s ? `2px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}`,
-                        background: detailFoodSize===s ? `${pc}20` : "transparent",
-                        color: detailFoodSize===s ? pc : pTpl.cardColor }}>{s}</button>
-                  ))}
-                </div>
-              </div>
-              <div style={{ marginBottom:8 }}>
-                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:4 }}>Adicciones</div>
-                <div style={{ display:"flex", flexWrap:"wrap", gap:3 }}>
-                  {["🧀 Queso +$2k","🥓 Tocineta +$3k","🥑 Aguacate +$2.5k","🍳 Huevo frito +$1.5k","🌶️ Sin picante FREE"].map(e => {
-                    const active = detailExtras.includes(e);
-                    return (
-                      <button key={e} onClick={() => setDetailExtras(prev => active ? prev.filter(x=>x!==e) : [...prev,e])}
-                        style={{ padding:"2px 5px", borderRadius:50, fontSize:6, fontWeight:700, cursor:"pointer",
-                          background: active ? pc : "transparent",
-                          color: active ? "#fff" : pTpl.cardColor,
-                          border: active ? `1px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}` }}>{e}</button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div style={{ marginBottom:10 }}>
-                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:3 }}>Preferencias / Notas</div>
-                <textarea value={detailNotes} onChange={e => setDetailNotes(e.target.value)}
-                  placeholder="Sin cebolla, extra salsa... (opcional)" rows={2}
-                  style={{ width:"100%", fontSize:7, padding:"4px 6px", borderRadius:6, border:`1px solid ${pTpl.headerBorderColor}`, background:"transparent", color: pTpl.cardColor, resize:"none", outline:"none", boxSizing:"border-box", fontFamily:"inherit" }} />
-              </div>
-            </>
-          )}
-
-          {/* ── ROPA / BEAUTY options ── */}
-          {isFashion && (
-            <>
-              <div style={{ marginBottom:8 }}>
-                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:4 }}>Talla: <span style={{ color: pc }}>{detailSize}</span></div>
-                <div style={{ display:"flex", gap:3 }}>
-                  {["XS","S","M","L","XL","XXL"].map(s => (
-                    <button key={s} onClick={() => setDetailSize(s)}
-                      style={{ minWidth:22, height:22, borderRadius:5, fontSize:6, fontWeight:700, cursor:"pointer",
-                        border: detailSize===s ? `2px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}`,
-                        background: detailSize===s ? `${pc}20` : "transparent",
-                        color: detailSize===s ? pc : pTpl.cardColor }}>{s}</button>
-                  ))}
-                </div>
-              </div>
-              <div style={{ marginBottom:10 }}>
-                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:4 }}>Color</div>
-                <div style={{ display:"flex", gap:4 }}>
-                  {[{n:"Negro",h:"#1a1a1a"},{n:"Blanco",h:"#e5e5e5"},{n:"Rojo",h:"#e63946"},{n:"Azul",h:"#457b9d"},{n:"Verde",h:"#2a9d5c"}].map(c => (
-                    <button key={c.n} title={c.n}
-                      style={{ width:16, height:16, borderRadius:"50%", background:c.h, border:"1.5px solid rgba(0,0,0,0.15)", cursor:"pointer" }} />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* ── TECH / GENERAL description ── */}
-          {!isFood && !isFashion && (
-            <div style={{ marginBottom:10 }}>
-              <div style={{ fontSize:7, lineHeight:1.5, color: pTpl.pageMutedColor, marginBottom:5 }}>{detailProd.desc}</div>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:3 }}>
-                {["✅ Garantía 1 año","🚚 Envío gratis","📦 Dev. 30 días"].map(b => (
-                  <span key={b} style={{ fontSize:6, padding:"2px 5px", borderRadius:50, background:`${pc}15`, color: pc, fontWeight:700 }}>{b}</span>
-                ))}
-              </div>
+          {/* Slide counter */}
+          <div style={{ position:"absolute", bottom:8, right:8, background:"rgba(0,0,0,0.55)", borderRadius:50, padding:"2px 8px", fontSize:6, color:"#fff", fontWeight:600 }}>1 / 4</div>
+        </div>
+        {/* Thumbnail strip */}
+        <div style={{ display:"flex", gap:4, padding:"7px 10px 6px", overflowX:"auto" }} className="hide-scrollbar">
+          {[0,1,2,3].map(i => (
+            <div key={i} style={{ flexShrink:0, width:44, height:44, borderRadius:7, overflow:"hidden",
+              border: i===0 ? `2px solid ${pc}` : `1.5px solid ${pTpl.headerBorderColor}`, cursor:"pointer" }}>
+              <img src={detailProd.img} alt="" style={{ width:"100%", height:"100%", objectFit: isFood||isFashion ? "cover" : "contain", padding: isFood||isFashion ? 0 : 4, background: pTpl.cardBg }} />
             </div>
-          )}
-
-          {/* Qty + CTA */}
-          <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:6 }}>
-            <div style={{ display:"flex", alignItems:"center", border:`1.5px solid ${pTpl.headerBorderColor}`, borderRadius:8, overflow:"hidden" }}>
-              <button onClick={() => setDetailQty(q => Math.max(1,q-1))}
-                style={{ width:26, height:26, background:"transparent", border:"none", cursor:"pointer", fontSize:15, lineHeight:1, color: pTpl.cardColor }}>−</button>
-              <span style={{ width:22, textAlign:"center", fontSize:9, fontWeight:800, color: pTpl.cardColor }}>{detailQty}</span>
-              <button onClick={() => setDetailQty(q => q+1)}
-                style={{ width:26, height:26, background:"transparent", border:"none", cursor:"pointer", fontSize:15, lineHeight:1, color: pTpl.cardColor }}>+</button>
-            </div>
-            <button onClick={() => setDetailProd(null)}
-              style={{ flex:1, padding:"7px 0", borderRadius:8, border:"none", background: pc, color:"#fff", fontSize:8, fontWeight:800, cursor:"pointer", boxShadow:`0 3px 12px ${pc}44` }}>
-              {isFood ? `🛵 Pedir · ${detailProd.p}` : `🛍 Agregar · ${detailProd.p}`}
-            </button>
+          ))}
+          <div style={{ flexShrink:0, width:44, height:44, borderRadius:7, border:`1.5px dashed ${pTpl.headerBorderColor}`, display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer" }}>
+            <span style={{ fontSize:16, color: pTpl.pageMutedColor, lineHeight:1 }}>+</span>
           </div>
         </div>
+      </div>
+
+      {/* ── Content (scrollable) ── */}
+      <div style={{ padding:"12px 12px 100px", flex:1 }}>
+
+        {/* Badges */}
+        <div style={{ display:"flex", gap:3, marginBottom:6, flexWrap:"wrap" }}>
+          <span style={{ fontSize:6, padding:"2px 7px", borderRadius:50, fontWeight:700, color:"#fff", background: pc }}>NUEVO</span>
+          <span style={{ fontSize:6, padding:"2px 7px", borderRadius:50, fontWeight:700, color:"#fff", background:"#e63946" }}>OFERTA</span>
+          {isFood && <span style={{ fontSize:6, padding:"2px 7px", borderRadius:50, fontWeight:700, color:"#111", background:"#f5c842" }}>🔥 Más pedido</span>}
+        </div>
+
+        {/* Product name */}
+        <div style={{ fontSize: mode==="mobile" ? 15 : 17, fontWeight:900, lineHeight:1.2, color: pTpl.cardColor, marginBottom:5 }}>{detailProd.n}</div>
+
+        {/* Rating + social proof */}
+        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8, fontSize:7, flexWrap:"wrap" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:3 }}>
+            <span style={{ color:"#f5a623", fontSize:9 }}>★★★★★</span>
+            <span style={{ color:"#2a9d5c", fontWeight:700 }}>4.8</span>
+            <span style={{ color: pTpl.pageMutedColor }}>(128 reseñas)</span>
+          </div>
+          <span style={{ color:"#e63946", fontWeight:600, display:"flex", alignItems:"center", gap:2 }}>
+            👁 12 personas viendo
+          </span>
+        </div>
+
+        {/* Price block */}
+        <div style={{ background:`${pc}0d`, borderRadius:10, padding:"10px 12px", marginBottom:12, border:`1px solid ${pc}25` }}>
+          <div style={{ display:"flex", alignItems:"baseline", gap:8, marginBottom:3 }}>
+            <span style={{ fontSize:24, fontWeight:900, color: pTpl.cardPriceColor }}>{detailProd.p}</span>
+            <span style={{ fontSize:10, color:"#bbb", textDecoration:"line-through" }}>${(detailProd.price * 1.3).toLocaleString("es-CO")}</span>
+            <span style={{ fontSize:7, fontWeight:900, color:"#fff", background:"#e63946", padding:"2px 6px", borderRadius:50 }}>-25%</span>
+          </div>
+          <div style={{ display:"flex", gap:8, fontSize:7 }}>
+            <span style={{ color:"#2a9d5c", fontWeight:700, display:"flex", alignItems:"center", gap:2 }}>🚚 Envío gratis · Llega mañana</span>
+            {isFood && <span style={{ color: pTpl.pageMutedColor }}>🕐 Listo en 15-20 min</span>}
+          </div>
+        </div>
+
+        {/* Seller trust pills */}
+        <div style={{ display:"flex", gap:3, marginBottom:12, flexWrap:"wrap" }}>
+          <span style={{ fontSize:6, padding:"3px 8px", borderRadius:50, background:`${pc}18`, color: pc, fontWeight:700 }}>⭐ Vendedor premium</span>
+          <span style={{ fontSize:6, padding:"3px 8px", borderRadius:50, background:"rgba(0,0,0,0.05)", color: pTpl.pageMutedColor, fontWeight:600 }}>🔒 Compra protegida</span>
+          <span style={{ fontSize:6, padding:"3px 8px", borderRadius:50, background:"rgba(42,157,92,0.1)", color:"#2a9d5c", fontWeight:600 }}>↩️ 30 días devolución</span>
+        </div>
+
+        <div style={{ borderTop:`1px solid ${pTpl.headerBorderColor}`, marginBottom:12 }} />
+
+        {/* ── FOOD options ── */}
+        {isFood && (<>
+          <div style={{ marginBottom:10 }}>
+            <div style={{ fontSize:9, fontWeight:800, color: pTpl.cardColor, marginBottom:6 }}>Elige el tamaño</div>
+            <div style={{ display:"flex", gap:5 }}>
+              {[{l:"Personal",p:""},{l:"Mediano",p:"+35%"},{l:"Grande",p:"+65%"}].map(s => (
+                <button key={s.l} onClick={() => setDetailFoodSize(s.l)}
+                  style={{ flex:1, padding:"7px 3px", borderRadius:9, fontSize:7, fontWeight:700, cursor:"pointer",
+                    border: detailFoodSize===s.l ? `2px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}`,
+                    background: detailFoodSize===s.l ? pc : "transparent",
+                    color: detailFoodSize===s.l ? "#fff" : pTpl.cardColor }}>
+                  {s.l}
+                  {s.p && <div style={{ fontSize:5, marginTop:2, opacity:.75 }}>{s.p}</div>}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div style={{ marginBottom:10 }}>
+            <div style={{ fontSize:9, fontWeight:800, color: pTpl.cardColor, marginBottom:6 }}>Adicciones</div>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:4 }}>
+              {["🧀 Queso extra +$2.000","🥓 Tocineta +$3.000","🥑 Aguacate +$2.500","🍳 Huevo frito +$1.500","🌶️ Sin picante FREE","🍟 Papas extra +$3.000"].map(e => {
+                const active = detailExtras.includes(e);
+                return (
+                  <button key={e} onClick={() => setDetailExtras(prev => active ? prev.filter(x=>x!==e) : [...prev,e])}
+                    style={{ padding:"4px 8px", borderRadius:50, fontSize:7, fontWeight:700, cursor:"pointer",
+                      background: active ? pc : "transparent",
+                      color: active ? "#fff" : pTpl.cardColor,
+                      border: active ? `1.5px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}` }}>{e}</button>
+                );
+              })}
+            </div>
+          </div>
+          <div style={{ marginBottom:12 }}>
+            <div style={{ fontSize:9, fontWeight:800, color: pTpl.cardColor, marginBottom:5 }}>Instrucciones especiales</div>
+            <textarea value={detailNotes} onChange={e => setDetailNotes(e.target.value)}
+              placeholder="Sin cebolla, extra salsa picante... (opcional)" rows={2}
+              style={{ width:"100%", fontSize:7, padding:"7px 10px", borderRadius:9, border:`1px solid ${pTpl.headerBorderColor}`, background:"transparent", color: pTpl.cardColor, resize:"none", outline:"none", boxSizing:"border-box", fontFamily:"inherit" }} />
+          </div>
+        </>)}
+
+        {/* ── FASHION options ── */}
+        {isFashion && (<>
+          <div style={{ marginBottom:10 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+              <span style={{ fontSize:9, fontWeight:800, color: pTpl.cardColor }}>Talla: <span style={{ color: pc }}>{detailSize}</span></span>
+              <span style={{ fontSize:7, color: pc, cursor:"pointer", textDecoration:"underline" }}>Guía de tallas →</span>
+            </div>
+            <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
+              {["XS","S","M","L","XL","XXL"].map(s => (
+                <button key={s} onClick={() => setDetailSize(s)}
+                  style={{ minWidth:36, height:36, borderRadius:8, fontSize:9, fontWeight:800, cursor:"pointer",
+                    border: detailSize===s ? `2px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}`,
+                    background: detailSize===s ? `${pc}20` : "transparent",
+                    color: detailSize===s ? pc : pTpl.cardColor }}>{s}</button>
+              ))}
+            </div>
+          </div>
+          <div style={{ marginBottom:12 }}>
+            <div style={{ fontSize:9, fontWeight:800, color: pTpl.cardColor, marginBottom:6 }}>Color</div>
+            <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+              {[{n:"Negro",h:"#1a1a1a"},{n:"Blanco",h:"#e8e8e8"},{n:"Rojo",h:"#e63946"},{n:"Azul",h:"#457b9d"},{n:"Verde",h:"#2a9d5c"}].map(c => (
+                <div key={c.n} style={{ textAlign:"center", cursor:"pointer" }}>
+                  <div style={{ width:26, height:26, borderRadius:"50%", background:c.h, border:"2px solid rgba(0,0,0,0.12)", margin:"0 auto 3px" }} />
+                  <div style={{ fontSize:6, color: pTpl.pageMutedColor }}>{c.n}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>)}
+
+        {/* ── TECH / GENERAL specs table ── */}
+        {!isFood && !isFashion && (
+          <div style={{ marginBottom:12 }}>
+            <div style={{ fontSize:9, fontWeight:800, color: pTpl.cardColor, marginBottom:8 }}>Características</div>
+            <div style={{ borderRadius:9, overflow:"hidden", border:`1px solid ${pTpl.headerBorderColor}` }}>
+              {[["Marca","Premium Brand"],["Modelo","Edición 2026"],["Garantía","12 meses"],["Estado","Nuevo · Original"],["Incluye","Caja + accesorios"]].map(([k,v],i) => (
+                <div key={k} style={{ display:"flex", justifyContent:"space-between", padding:"7px 10px", background: i%2===0 ? "transparent" : `${pTpl.headerBorderColor}55`, fontSize:7 }}>
+                  <span style={{ color: pTpl.pageMutedColor }}>{k}</span>
+                  <span style={{ fontWeight:700, color: pTpl.cardColor }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Description ── */}
+        <div style={{ marginBottom:12, borderTop:`1px solid ${pTpl.headerBorderColor}`, paddingTop:12 }}>
+          <div style={{ fontSize:9, fontWeight:800, color: pTpl.cardColor, marginBottom:6 }}>Descripción</div>
+          <div style={{ fontSize:7, lineHeight:1.75, color: pTpl.pageMutedColor }}>{detailProd.desc}</div>
+        </div>
+
+        {/* ── Trust badges grid ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
+          {[["🚚","Envío gratis","Llega mañana"],["🔒","Compra protegida","100% segura"],["↩️","30 días","Devolución gratis"],["⭐","Garantía","12 meses inc."]].map(([ico,t,sub]) => (
+            <div key={t} style={{ display:"flex", gap:6, padding:"8px 9px", borderRadius:10, border:`1px solid ${pTpl.headerBorderColor}`, alignItems:"flex-start" }}>
+              <span style={{ fontSize:18, lineHeight:1 }}>{ico}</span>
+              <div>
+                <div style={{ fontSize:7, fontWeight:800, color: pTpl.cardColor }}>{t}</div>
+                <div style={{ fontSize:6, color: pTpl.pageMutedColor, marginTop:2 }}>{sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Fixed bottom bar ── */}
+      <div style={{ position:"sticky", bottom:0, background: pTpl.cardBg, borderTop:`2px solid ${pTpl.headerBorderColor}`, padding:"9px 10px", display:"flex", gap:6, alignItems:"center", boxShadow:"0 -6px 24px rgba(0,0,0,0.15)", zIndex:30 }}>
+        <div style={{ display:"flex", alignItems:"center", border:`1.5px solid ${pTpl.headerBorderColor}`, borderRadius:9, overflow:"hidden", flexShrink:0 }}>
+          <button onClick={() => setDetailQty(q => Math.max(1,q-1))}
+            style={{ width:30, height:37, background:"transparent", border:"none", cursor:"pointer", fontSize:18, color: pTpl.cardColor }}>−</button>
+          <span style={{ width:28, textAlign:"center", fontSize:11, fontWeight:900, color: pTpl.cardColor }}>{detailQty}</span>
+          <button onClick={() => setDetailQty(q => q+1)}
+            style={{ width:30, height:37, background:"transparent", border:"none", cursor:"pointer", fontSize:18, color: pTpl.cardColor }}>+</button>
+        </div>
+        <button onClick={() => setDetailProd(null)}
+          style={{ flex:1, padding:"10px 0", borderRadius:9, border:`2px solid ${pc}`, background:"transparent", color: pc, fontSize:9, fontWeight:900, cursor:"pointer" }}>
+          🛒 Al carrito
+        </button>
+        <button onClick={() => setDetailProd(null)}
+          style={{ flex:1.5, padding:"10px 0", borderRadius:9, border:"none", background: pc, color:"#fff", fontSize:9, fontWeight:900, cursor:"pointer", boxShadow:`0 4px 18px ${pc}55` }}>
+          {isFood ? "🛵 Pedir ahora" : "⚡ Comprar ya"}
+        </button>
       </div>
     </div>
   ) : null;
@@ -488,8 +581,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 rounded-b-2xl z-10 flex items-center justify-center" style={{ background:"#0e0e16", borderBottom:"1px solid rgba(255,255,255,0.1)" }}>
               <div className="w-12 h-1 rounded-full" style={{ background:"rgba(255,255,255,0.2)" }}/>
             </div>
-            <div className="absolute inset-0 overflow-y-auto mt-6 bg-white rounded-b-[38px]">{inner}</div>
-            {panel}
+            <div className="absolute inset-0 overflow-y-auto mt-6 bg-white rounded-b-[38px]">{detailPage ?? inner}</div>
           </div>
         </div>
       </div>
@@ -507,8 +599,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
           tutienda.com/{config.name?.toLowerCase().replace(/\s+/g,"-") || "mi-tienda"}
         </div>
       </div>
-      <div className="overflow-y-auto" style={{ height:"calc(100% - 40px)" }}>{inner}</div>
-      {panel}
+      <div className="overflow-y-auto" style={{ height:"calc(100% - 40px)" }}>{detailPage ?? inner}</div>
     </div>
   );
 }
