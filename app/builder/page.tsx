@@ -51,51 +51,71 @@ const PALETTES: Record<string, [string,string][]> = {
   general:[["#667eea","#764ba2"],["#f093fb","#f5576c"],["#43e97b","#38f9d7"],["#4facfe","#00f2fe"]],
 };
 
+const CATEGORY_ICONS_PREVIEW: Record<string, string> = {
+  ropa: "👔", tech: "💻", food: "🍽️", beauty: "💄", hogar: "🏡", general: "📦",
+};
+
 function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|"mobile" }) {
   const pc = config.primaryColor || "#7c5cfc";
-  const sc = config.secondaryColor || "#f43f8e";
   const name = config.name || "Mi Tienda";
   const tag  = config.tagline || "Bienvenido a nuestra colección";
   const type = config.type || "general";
   const pal  = PALETTES[type] || PALETTES.general;
+  const icon = CATEGORY_ICONS_PREVIEW[type] || "📦";
   const rawProds = config.products?.length
     ? config.products.map((p,i) => ({ n: p.n||"Producto", p: p.p||"$50.000", g: pal[i%pal.length] }))
     : pal.slice(0, config.columns||3).map((g,i) => ({ n:`Producto ${i+1}`, p:"$50.000", g }));
   const cols = Math.min(config.columns||3, 3);
 
   const inner = (
-    <div style={{ fontFamily:"sans-serif", color:"#1a1a2e", background:"#fafafa", minHeight:"100%" }}>
+    <div style={{ fontFamily:"sans-serif", color:"#1a1a2e", background:"#f3f4f6", minHeight:"100%" }}>
       {/* Nav */}
-      <div style={{ padding:"8px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:"1px solid #eee", background:"rgba(250,250,250,0.95)", position:"sticky", top:0 }}>
-        <span style={{ fontWeight:800, fontSize:13, background:`linear-gradient(135deg,${pc},${sc})`, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>{name}</span>
-        <div style={{ display:"flex", gap:8, fontSize:10, color:"#bbb" }}>Inicio · Productos</div>
-        <div style={{ background:`linear-gradient(135deg,${pc},${sc})`, color:"#fff", borderRadius:100, padding:"3px 10px", fontSize:10, fontWeight:700 }}>Carrito 0</div>
+      <div style={{ padding:"8px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:"1px solid #e4e4e4", background:"#fff", position:"sticky", top:0, boxShadow:"0 1px 3px rgba(0,0,0,0.05)" }}>
+        <span style={{ fontWeight:800, fontSize:12, color:"#1a1a2e" }}>
+          <span style={{ color: pc }}>{name[0]}</span>{name.slice(1)}
+        </span>
+        <div style={{ display:"flex", gap:8, fontSize:9, color:"#aaa" }}>Inicio · Colección · Ofertas</div>
+        <div style={{ background: pc, color:"#fff", borderRadius:6, padding:"3px 9px", fontSize:9, fontWeight:700 }}>Carrito 0</div>
       </div>
-      {/* Hero */}
-      <div style={{ background:`linear-gradient(135deg,${pc}20,${sc}15)`, padding:"24px 14px", textAlign:"center", position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute", width:160, height:160, borderRadius:"50%", background:`radial-gradient(circle,${pc}28,transparent)`, top:-60, left:-40, filter:"blur(35px)", pointerEvents:"none" }}/>
-        <h1 style={{ fontWeight:800, fontSize:18, color:"#1a1a2e", letterSpacing:-.5, position:"relative" }}>{name}</h1>
-        <p style={{ fontSize:11, color:"#777", marginTop:4, position:"relative" }}>{tag}</p>
-        <button style={{ marginTop:12, background:`linear-gradient(135deg,${pc},${sc})`, color:"#fff", border:"none", borderRadius:100, padding:"7px 18px", fontSize:11, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 16px ${pc}44`, position:"relative" }}>Ver colección →</button>
+      {/* Hero banner */}
+      <div style={{ background:"#fff", padding:"18px 14px", borderBottom:"1px solid #e4e4e4", display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
+        <div>
+          <div style={{ fontSize:8, fontWeight:700, color: pc, marginBottom:4, textTransform:"uppercase", letterSpacing:.5 }}>{type} · Colección nueva</div>
+          <h1 style={{ fontWeight:800, fontSize:14, color:"#111", letterSpacing:-.3, lineHeight:1.3, marginBottom:4 }}>{tag || name}</h1>
+          <p style={{ fontSize:9, color:"#999", marginBottom:8 }}>{rawProds.length} productos · Envío gratis</p>
+          <button style={{ background: pc, color:"#fff", border:"none", borderRadius:6, padding:"5px 12px", fontSize:9, fontWeight:700, cursor:"pointer" }}>Ver colección →</button>
+        </div>
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:4, flexShrink:0 }}>
+          {[["🚚","Envío gratis"],["🔒","Pago seguro"],["↩️","Devoluciones"],["⭐","4.9 estrellas"]].map(([ic,lb])=>(
+            <div key={lb} style={{ background:"#f9f9f9", border:"1px solid #eee", borderRadius:6, padding:"4px 6px", fontSize:8, display:"flex", alignItems:"center", gap:3 }}>
+              <span style={{ fontSize:10 }}>{ic}</span><span style={{ color:"#555", fontWeight:600 }}>{lb}</span>
+            </div>
+          ))}
+        </div>
       </div>
       {/* Products */}
       <div style={{ padding:"12px 14px" }}>
-        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
-          <p style={{ fontSize:10, fontWeight:800, color:"#444", textTransform:"uppercase", letterSpacing:.6 }}>Destacados</p>
-          <p style={{ fontSize:9, color:"#bbb" }}>{rawProds.length} artículos</p>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+          <p style={{ fontSize:10, fontWeight:800, color:"#111" }}>Productos destacados</p>
+          <p style={{ fontSize:8, color:"#bbb" }}>{rawProds.length} artículos</p>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols},1fr)`, gap:8 }}>
+        <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols},1fr)`, gap:6 }}>
           {rawProds.slice(0,cols*2).map((p,i)=>(
-            <div key={i} style={{ borderRadius:12, overflow:"hidden", background:"#fff", border:"1px solid #eeeef5", boxShadow:"0 2px 8px rgba(0,0,0,.05)" }}>
-              <div style={{ height:70, background:`linear-gradient(135deg,${p.g[0]},${p.g[1]})`, display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
-                <div style={{ width:36, height:36, borderRadius:10, background:"rgba(255,255,255,.3)", backdropFilter:"blur(4px)", border:"1px solid rgba(255,255,255,.4)" }}/>
+            <div key={i} style={{ borderRadius:10, overflow:"hidden", background:"#fff", border:"1px solid #e8e8e8", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+              {/* Image area - neutral gray */}
+              <div style={{ height:64, background:"#f7f7f7", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+                {i === 0 && <div style={{ position:"absolute", top:3, left:3, background: pc, color:"#fff", borderRadius:3, padding:"1px 5px", fontSize:7, fontWeight:700 }}>Nuevo</div>}
+                <span style={{ fontSize:28, opacity:0.18 }}>{icon}</span>
               </div>
-              <div style={{ padding:"7px 8px" }}>
-                <div style={{ fontSize:10, fontWeight:700, color:"#1a1a2e" }}>{p.n}</div>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginTop:4 }}>
-                  <span style={{ fontSize:10, fontWeight:800, color:pc }}>{p.p}</span>
-                  <button style={{ background:`linear-gradient(135deg,${pc},${sc})`, color:"#fff", border:"none", borderRadius:100, padding:"3px 8px", fontSize:9, fontWeight:700, cursor:"pointer" }}>+</button>
+              <div style={{ padding:"6px 7px" }}>
+                <div style={{ fontSize:9, fontWeight:600, color:"#1a1a2e", marginBottom:3, lineHeight:1.3 }}>{p.n}</div>
+                {/* Stars */}
+                <div style={{ fontSize:9, color:"#f5a623", marginBottom:3 }}>★★★★<span style={{ color:"#e0e0e0" }}>★</span> <span style={{ color:"#bbb", fontSize:8 }}>(128)</span></div>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                  <span style={{ fontSize:10, fontWeight:800, color:"#1a1a2e" }}>{p.p}</span>
+                  <button style={{ background: pc, color:"#fff", border:"none", borderRadius:4, padding:"2px 7px", fontSize:8, fontWeight:700, cursor:"pointer" }}>+ Agregar</button>
                 </div>
+                <div style={{ fontSize:7, color:"#2a9d5c", marginTop:2, fontWeight:600 }}>🚚 Envío gratis</div>
               </div>
             </div>
           ))}
