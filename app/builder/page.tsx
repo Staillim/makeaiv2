@@ -138,7 +138,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
   const type = config.type || "general";
   const previewImages = PRODUCT_IMAGES[type] || PRODUCT_IMAGES.general;
   const exProds = EXAMPLE_PRODUCTS[type] || EXAMPLE_PRODUCTS.general;
-  const rawProds = exProds.slice(0, config.columns || 3).map((p, i) => ({
+  const rawProds = exProds.slice(0, Math.max(config.columns || 3, 3)).map((p, i) => ({
     n: p.name,
     price: p.price,
     p: `$${p.price.toLocaleString("es-CO")}`,
@@ -148,6 +148,22 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
   const pTpl = STORE_TEMPLATES[(type || "general") as keyof typeof STORE_TEMPLATES] ?? STORE_TEMPLATES.general;
   const isFood = type === "food";
   const isFashion = type === "ropa" || type === "beauty";
+
+  // ── Auto-sliding hero carousel ──────────────────────────
+  const [slide, setSlide] = useState(0);
+  const [fading, setFading] = useState(false);
+  useEffect(() => {
+    if (rawProds.length < 2) return;
+    const timer = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setSlide(s => (s + 1) % rawProds.length);
+        setFading(false);
+      }, 350);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [rawProds.length]);
+  const current = rawProds[slide] ?? rawProds[0];
 
   const inner = (
     <div style={{ fontFamily:"'Inter',sans-serif", color: pTpl.pageColor, background: pTpl.pageBg, minHeight:"100%" }}>
@@ -160,55 +176,65 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
         <div style={{ background: pc, color:"#fff", borderRadius: pTpl.btnRadius, padding:"3px 9px", fontSize:9, fontWeight:700 }}>Carrito 0</div>
       </div>
 
-      {/* ── Hero with Product Carousel ── */}
-      <div style={{ background: pTpl.heroBg, padding: mode === "mobile" ? "14px 10px 10px" : "16px 14px 10px", position:"relative", overflow:"hidden" }}>
-        {/* Top bar: store subtitle + trust badges */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
+      {/* ── Hero Slider ── */}
+      <div style={{ position:"relative", overflow:"hidden", height: mode === "mobile" ? 180 : 220 }}>
+        {/* Background image fills entire hero */}
+        <img
+          src={current.img}
+          alt={current.n}
+          style={{
+            position:"absolute", inset:0, width:"100%", height:"100%",
+            objectFit: isFashion || isFood ? "cover" : "contain",
+            padding: (isFashion || isFood) ? 0 : 20,
+            background: pTpl.cardBg,
+            transition: "opacity 0.35s ease",
+            opacity: fading ? 0 : 1,
+          }}
+        />
+        {/* Dark gradient overlay */}
+        <div style={{ position:"absolute", inset:0, background: pTpl.heroIsDark
+          ? "linear-gradient(135deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.3) 60%, transparent 100%)"
+          : "linear-gradient(135deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 60%, transparent 100%)"
+        }} />
+        {/* Colored tint from brand */}
+        <div style={{ position:"absolute", inset:0, background: `linear-gradient(to top right, ${pc}33 0%, transparent 60%)` }} />
+
+        {/* Content */}
+        <div style={{
+          position:"absolute", inset:0, padding: mode === "mobile" ? "14px 12px" : "18px 16px",
+          display:"flex", flexDirection:"column", justifyContent:"space-between",
+          opacity: fading ? 0 : 1, transition: "opacity 0.35s ease",
+        }}>
           <div>
-            <div style={{ fontSize:7, fontWeight:700, color: pTpl.heroColor, textTransform:"uppercase", letterSpacing:.6, opacity:.7, marginBottom:2 }}>
-              {isFood ? "🔥 Pide ahora" : pTpl.navItems[1]+" · Nueva"}
+            {/* Badge */}
+            <div style={{ display:"inline-flex", alignItems:"center", gap:4, background: isFood ? "#e63946" : pc, color:"#fff", padding:"2px 8px", borderRadius:50, fontSize:7, fontWeight:800, marginBottom:6 }}>
+              {isFood ? "🔥 Entrega en 20 min" : slide === 0 ? "✨ NUEVO" : "⭐ DESTACADO"}
             </div>
-            <h1 style={{ fontWeight:900, fontSize: mode === "mobile" ? 12 : 15, color: pTpl.heroColor, letterSpacing:-.3, lineHeight:1.15, margin:0 }}>{tag || name}</h1>
+            {/* Product name */}
+            <div style={{ opacity: fading ? 0 : 1, transition:"opacity 0.3s", fontSize: mode === "mobile" ? 14 : 17, fontWeight:900, color:"#fff", letterSpacing:-.3, lineHeight:1.15, marginBottom:4, textShadow:"0 2px 12px rgba(0,0,0,0.5)" }}>
+              {current.n}
+            </div>
+            {/* Tagline */}
+            <div style={{ fontSize:8, color:"rgba(255,255,255,0.8)", marginBottom:8 }}>{tag}</div>
+            {/* Price */}
+            <div style={{ fontSize: mode === "mobile" ? 16 : 18, fontWeight:900, color: isFood ? "#f5c842" : "#fff", letterSpacing:-.5, textShadow:"0 2px 8px rgba(0,0,0,0.4)" }}>
+              {current.p}
+              {isFood && <span style={{ fontSize:7, color:"rgba(255,255,255,0.6)", fontWeight:400, marginLeft:4 }}>· Desde</span>}
+            </div>
           </div>
-          {mode !== "mobile" && (
-            <div style={{ display:"flex", gap:3, flexShrink:0 }}>
-              {pTpl.trustItems.slice(0,2).map((b,i)=>(
-                <div key={i} style={{ background: pTpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border:`1px solid ${pTpl.heroIsDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`, borderRadius:8, padding:"3px 7px", fontSize:6, color: pTpl.heroColor, fontWeight:600 }}>
-                  {b.label}
-                </div>
+
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.heroBtnRadius, padding: mode === "mobile" ? "5px 12px" : "6px 14px", fontSize:9, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 16px ${pc}66` }}>
+              {isFood ? "🛵 Pedir ahora →" : isFashion ? "Ver tallas →" : "Ver detalles →"}
+            </button>
+            {/* Slide dots */}
+            <div style={{ display:"flex", gap:4 }}>
+              {rawProds.map((_,i) => (
+                <div key={i} style={{ width: i === slide ? 14 : 5, height:5, borderRadius:50, background: i === slide ? "#fff" : "rgba(255,255,255,0.4)", transition:"all 0.3s", cursor:"pointer" }} onClick={() => setSlide(i)} />
               ))}
             </div>
-          )}
+          </div>
         </div>
-
-        {/* Scrollable product carousel inside hero */}
-        <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:8 }} className="hide-scrollbar">
-          {rawProds.map((p,i) => (
-            <div key={i} style={{ flexShrink:0, width: mode === "mobile" ? (isFashion ? 80 : 75) : (isFashion ? 95 : 88), cursor:"pointer" }}>
-              <div style={{ height: mode === "mobile" ? (isFashion ? 100 : 80) : (isFashion ? 120 : 95), borderRadius: isFashion ? 4 : 12, overflow:"hidden", position:"relative", boxShadow:"0 4px 16px rgba(0,0,0,0.3)" }}>
-                <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit: isFashion || isFood ? "cover" : "contain", padding: (isFashion || isFood) ? 0 : 6, background: pTpl.cardBg, display:"block" }} />
-                <div style={{ position:"absolute", inset:0, background: isFood ? "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)" : "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)" }} />
-                {i === 0 && (
-                  <div style={{ position:"absolute", top:3, left:3, background: isFood ? "#e63946" : pc, color:"#fff", borderRadius:3, padding:"1px 4px", fontSize:5, fontWeight:800 }}>
-                    {isFood ? "🔥 -20%" : "NUEVO"}
-                  </div>
-                )}
-                <div style={{ position:"absolute", bottom:4, left:4, right:4 }}>
-                  <div style={{ fontSize:7, fontWeight:700, color:"#fff", lineHeight:1.2, marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.n}</div>
-                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                    <span style={{ fontSize:9, fontWeight:900, color: isFood ? "#f5c842" : "#fff" }}>{p.p}</span>
-                    {isFood && <span style={{ fontSize:5, color:"rgba(255,255,255,0.7)", fontWeight:600 }}>🕐 15 min</span>}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA button */}
-        <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.heroBtnRadius, padding:"4px 12px", fontSize:8, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 14px ${pc}55` }}>
-          {isFood ? "🛵 Ver menú completo →" : "Ver colección →"}
-        </button>
       </div>
 
       {/* ── Food: delivery toggle + categories ── */}
