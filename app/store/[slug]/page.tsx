@@ -4,13 +4,21 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { TypingIndicator } from "@/components/ui";
-import { ShoppingCart, MessageCircle, X, Send, Search } from "lucide-react";
+import { ShoppingCart, MessageCircle, X, Send, Search, Truck, Lock, RotateCcw, Star, Bot, Package, ShoppingBag, Cpu, Utensils, Sparkles, Home, CreditCard } from "lucide-react";
 import { formatCOP } from "@/lib/data";
 import type { ProductLegacy as Product, Message } from "@/types";
 
-const CATEGORY_ICONS: Record<string, string> = {
-  ropa: "👔", tech: "💻", food: "🍽️", beauty: "💄", hogar: "🏡", general: "📦",
-};
+function StoreIcon({ type, size = 16, color = "#ccc" }: { type: string; size?: number; color?: string }) {
+  const p = { size, color };
+  switch (type) {
+    case "ropa":   return <ShoppingBag {...p} />;
+    case "tech":   return <Cpu {...p} />;
+    case "food":   return <Utensils {...p} />;
+    case "beauty": return <Sparkles {...p} />;
+    case "hogar":  return <Home {...p} />;
+    default:       return <Package {...p} />;
+  }
+}
 
 function StarRating({ value }: { value: number }) {
   return (
@@ -47,7 +55,6 @@ quickReplies max 3, puede ser [].`;
 
 function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAdd: (p: Product) => void; storeType: string }) {
   const [hovered, setHovered] = useState(false);
-  const icon = CATEGORY_ICONS[storeType] || CATEGORY_ICONS[p.category?.toLowerCase() ?? ""] || "📦";
 
   // Pseudo-random discount based on price digits
   const seed = p.price % 100;
@@ -71,7 +78,15 @@ function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAd
       onClick={() => onAdd(p)}
     >
       {/* Image area */}
-      <div className="relative flex items-center justify-center overflow-hidden" style={{ height: 200, background: "#f7f7f7" }}>
+      <div className="relative overflow-hidden" style={{ height: 200, background: "#f7f7f7" }}>
+        {/* Product image or icon placeholder */}
+        {p.image ? (
+          <img src={p.image} alt={p.name} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <StoreIcon type={storeType} size={72} color={hovered ? "#c0c0c0" : "#e0e0e0"} />
+          </div>
+        )}
         {p.badge && (
           <span className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[11px] font-bold text-white"
             style={{ background: pc }}>
@@ -90,10 +105,6 @@ function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAd
             ¡Solo {p.stock}!
           </span>
         )}
-        {/* Icon placeholder */}
-        <span style={{ fontSize: 72, opacity: hovered ? 0.22 : 0.15, userSelect: "none", transition: "opacity 0.2s" }}>
-          {icon}
-        </span>
         {/* Hover: Add to cart bar */}
         <button
           className="absolute bottom-0 left-0 right-0 py-2.5 text-sm font-bold text-white transition-all duration-200"
@@ -134,7 +145,7 @@ function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAd
             )}
           </div>
           {hasFreeShipping && (
-            <p className="text-xs font-semibold mt-1" style={{ color: "#2a9d5c" }}>🚚 Envío gratis</p>
+            <p className="flex items-center gap-1 text-xs font-semibold mt-1" style={{ color: "#2a9d5c" }}><Truck size={12} color="#2a9d5c"/> Envío gratis</p>
           )}
         </div>
       </div>
@@ -164,8 +175,8 @@ export default function StorePage() {
   if (!foundStore) {
     return (
       <div style={{ background:"#fafafa", minHeight:"100vh", fontFamily:"var(--font-jakarta)" }} className="flex flex-col items-center justify-center gap-6 p-8 text-center">
-        <div className="text-6xl">🔍</div>
-        <h1 className="text-3xl font-black" style={{ fontFamily:"var(--font-syne)", color:"#1a1a2e" }}>Tienda no encontrada</h1>
+        <Search size={64} color="#ccc" />
+        <h1 className="text-3xl font-black" style={{ fontFamily:"var(--font-jakarta)", color:"#1a1a2e" }}>Tienda no encontrada</h1>
         <p style={{ color:"#777" }}>No existe una tienda con la URL <strong>/store/{slug}</strong></p>
         <div className="flex gap-3">
           <Link href="/builder" className="px-6 py-3 rounded-full text-sm font-bold text-white" style={{ background:"linear-gradient(135deg,#7c5cfc,#a855f7)" }}>Crear tienda</Link>
@@ -214,7 +225,7 @@ export default function StorePage() {
       if (!isSystem) setMessages(m=>[...m,{ id:(Date.now()-1).toString(),role:"user",content:userText,timestamp:new Date() }]);
       setMessages(m=>[...m,{ id:Date.now().toString(),role:"assistant",content:botText,timestamp:new Date(),quickReplies:parsed.quickReplies||[] } as any]);
     } catch {
-      setMessages(m=>[...m,{ id:Date.now().toString(),role:"assistant",content:"Error de conexión 😕",timestamp:new Date() }]);
+      setMessages(m=>[...m,{ id:Date.now().toString(),role:"assistant",content:"Error de conexión. Intenta de nuevo.",timestamp:new Date() }]);
     }
     setLoading(false);
   }
@@ -300,7 +311,7 @@ export default function StorePage() {
           <div className="flex-1 min-w-0">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4"
               style={{ background: `${pc}15`, color: pc }}>
-              {CATEGORY_ICONS[store.type] || "📦"} {store.type?.charAt(0).toUpperCase() + store.type?.slice(1)} · Colección {new Date().getFullYear()}
+              <StoreIcon type={store.type} size={12} color={pc}/> {store.type?.charAt(0).toUpperCase() + store.type?.slice(1)} · Colección {new Date().getFullYear()}
             </div>
             <h1 className="text-3xl md:text-5xl font-black leading-tight tracking-tight mb-3"
               style={{ fontFamily: "var(--font-jakarta)", color: "#111" }}>
@@ -325,14 +336,14 @@ export default function StorePage() {
           {/* Trust boxes */}
           <div className="flex-shrink-0 grid grid-cols-2 gap-2.5">
             {[
-              { icon: "🚚", label: "Envío gratis", sub: "Desde $50.000" },
-              { icon: "🔒", label: "Pago seguro", sub: "SSL 256-bit" },
-              { icon: "↩️", label: "Devoluciones", sub: "30 días libres" },
-              { icon: "⭐", label: "4.9 / 5", sub: "+2.400 reseñas" },
-            ].map(b => (
-              <div key={b.label} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white"
+              { icon: <Truck size={20} color={pc}/>, label: "Envío gratis", sub: "Desde $50.000" },
+              { icon: <Lock size={20} color={pc}/>, label: "Pago seguro", sub: "SSL 256-bit" },
+              { icon: <RotateCcw size={20} color={pc}/>, label: "Devoluciones", sub: "30 días libres" },
+              { icon: <Star size={20} color="#f5a623"/>, label: "4.9 / 5", sub: "+2.400 reseñas" },
+            ].map((b, idx) => (
+              <div key={idx} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white"
                 style={{ border: "1px solid #e8e8e8", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-                <span className="text-xl">{b.icon}</span>
+                {b.icon}
                 <div>
                   <p className="text-xs font-bold" style={{ color: "#1a1a2e" }}>{b.label}</p>
                   <p className="text-[10px] mt-0.5" style={{ color: "#aaa" }}>{b.sub}</p>
@@ -370,7 +381,7 @@ export default function StorePage() {
           {/* Grid */}
           {store.products.length === 0 ? (
             <div className="flex flex-col items-center gap-3 py-20 text-center">
-              <span style={{ fontSize: 48, opacity: 0.3 }}>📦</span>
+              <Package size={48} color="#ccc" />
               <p className="font-semibold" style={{ color: "#aaa" }}>No hay productos aún</p>
             </div>
           ) : (
@@ -410,7 +421,7 @@ export default function StorePage() {
             <div>
               <p className="font-bold mb-2" style={{ color: "#555" }}>Pago seguro</p>
               <div className="flex gap-2 flex-wrap">
-                {["💳 Visa", "💳 MC", "🏦 PSE", "💰 Efecty"].map(m => (
+                {["Visa", "Mastercard", "PSE", "Efecty"].map(m => (
                   <span key={m} className="px-2 py-1 rounded text-[10px] font-semibold"
                     style={{ background: "#f4f4f4", color: "#777", border: "1px solid #e8e8e8" }}>{m}</span>
                 ))}
@@ -432,8 +443,8 @@ export default function StorePage() {
             style={{ background: "#fff", border: "1px solid #e4e4e4", boxShadow: "0 24px 60px rgba(0,0,0,0.18)" }}>
             {/* Chat head */}
             <div className="flex items-center gap-3 p-4" style={{ background: pc }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
-                style={{ background: "rgba(255,255,255,0.2)" }}>🤖</div>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.2)" }}><Bot size={18} color="white"/></div>
               <div>
                 <div className="font-bold text-sm text-white" style={{ fontFamily: "var(--font-syne)" }}>
                   Asistente de compras

@@ -91,6 +91,7 @@ export interface ProductLegacy {
   variants: string[];
   gradient: [string, string];
   badge?: string;
+  image?: string;
   active: boolean;
   sales: number;
 }
