@@ -731,7 +731,7 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
 
   return (
     <div
-      className="overflow-hidden cursor-pointer flex flex-col transition-all duration-200"
+      className="overflow-hidden cursor-pointer flex flex-col transition-all duration-200 min-w-0"
       style={{
         background: tpl.cardBg,
         border: tpl.cardBorder,
@@ -744,7 +744,7 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
       onClick={() => onOpen(p)}
     >
       {/* Image */}
-      <div className="relative overflow-hidden" style={{ height: 180 }}>
+      <div className="relative overflow-hidden" style={{ height: 150 }}>
         {p.image
           ? <img src={p.image} alt={p.name} className="w-full h-full object-cover transition-transform duration-300"
               style={{ transform: hovered ? "scale(1.08)" : "scale(1)" }} />
@@ -787,22 +787,18 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
 
       {/* Info */}
       <div className="p-3 flex flex-col flex-1">
-        <p className="text-sm font-bold leading-snug mb-1 line-clamp-2" style={{ color: tpl.cardColor }}>{p.name}</p>
+        <p className="text-xs font-bold leading-snug mb-1 line-clamp-2" style={{ color: tpl.cardColor }}>{p.name}</p>
 
-        {p.description && (
-          <p className="text-[11px] mb-2 line-clamp-1" style={{ color: "#888" }}>{p.description}</p>
-        )}
-
-        <div className="flex items-baseline gap-2 mt-auto">
-          <span className="text-xl font-black" style={{ color: tpl.cardPriceColor }}>${p.price.toLocaleString("es-CO")}</span>
+        <div className="flex items-baseline gap-1.5 mt-auto">
+          <span className="text-base font-black" style={{ color: tpl.cardPriceColor }}>${p.price.toLocaleString("es-CO")}</span>
           {meta.originalPrice && (
-            <span className="text-xs line-through" style={{ color: "#555" }}>${meta.originalPrice.toLocaleString("es-CO")}</span>
+            <span className="text-[10px] line-through" style={{ color: "#555" }}>${meta.originalPrice.toLocaleString("es-CO")}</span>
           )}
         </div>
 
         <button
           onClick={e => { e.stopPropagation(); onOpen(p); }}
-          className="mt-2 w-full py-2 rounded-xl text-xs font-black text-white transition-opacity hover:opacity-90"
+          className="mt-1.5 w-full py-2 rounded-xl text-xs font-black text-white transition-opacity hover:opacity-90"
           style={{ background: pc }}>
           + Agregar
         </button>
@@ -823,7 +819,7 @@ function ProductCard({ p, pc, onOpen, tpl }: {
 
   return (
     <div
-      className="overflow-hidden cursor-pointer flex flex-col transition-all duration-200"
+      className="overflow-hidden cursor-pointer flex flex-col transition-all duration-200 min-w-0"
       style={{
         background: tpl.cardBg,
         border: tpl.cardBorder,
@@ -835,7 +831,7 @@ function ProductCard({ p, pc, onOpen, tpl }: {
       onMouseLeave={() => setHovered(false)}
       onClick={() => onOpen(p)}
     >
-      <div className="relative overflow-hidden" style={{ height: 200, background: tpl.cardBg }}>
+      <div className="relative overflow-hidden" style={{ height: 160, background: tpl.cardBg }}>
         {p.image ? (
           <img src={p.image} alt={p.name} className="w-full h-full"
             style={{ objectFit: "contain", padding: 12, background: tpl.cardBg }} />
@@ -883,24 +879,20 @@ function ProductCard({ p, pc, onOpen, tpl }: {
         </div>
       </div>
 
-      <div className="p-3 flex flex-col flex-1">
-        <p className="text-sm font-semibold leading-snug mb-1.5 line-clamp-2" style={{ color: tpl.cardColor }}>{p.name}</p>
+      <div className="p-2.5 flex flex-col flex-1">
+        <p className="text-xs font-semibold leading-snug mb-1 line-clamp-2" style={{ color: tpl.cardColor }}>{p.name}</p>
         <StarRating value={meta.ratingVal} count={meta.reviewCount} />
 
-        <div className="flex items-center gap-1 text-[10px] my-1.5" style={{ color: "#e63946" }}>
-          <Eye size={10} /><span>{meta.viewers} personas lo ven</span>
-        </div>
-
-        <div className="mt-auto">
-          <div className="flex items-baseline gap-1.5 flex-wrap">
-            <span className="text-lg font-black" style={{ color: tpl.cardPriceColor }}>{formatCOP(p.price)}</span>
+        <div className="mt-auto pt-1">
+          <div className="flex items-baseline gap-1 flex-wrap">
+            <span className="text-base font-black" style={{ color: tpl.cardPriceColor }}>{formatCOP(p.price)}</span>
             {meta.originalPrice && (
-              <span className="text-xs line-through" style={{ color: "#bbb" }}>{formatCOP(meta.originalPrice)}</span>
+              <span className="text-[10px] line-through" style={{ color: "#bbb" }}>{formatCOP(meta.originalPrice)}</span>
             )}
           </div>
           {meta.hasFreeShipping && (
-            <p className="flex items-center gap-1 text-[10px] font-semibold mt-1" style={{ color: "#2a9d5c" }}>
-              <Truck size={10} color="#2a9d5c"/> Envío gratis
+            <p className="flex items-center gap-1 text-[10px] font-semibold mt-0.5" style={{ color: "#2a9d5c" }}>
+              <Truck size={9} color="#2a9d5c"/> Envío gratis
             </p>
           )}
         </div>
@@ -1149,8 +1141,8 @@ export default function StorePage() {
 
       {/* ── Hero banner ────────────────────────────────────── */}
       <section style={{ background: tpl.heroBg }}>
-        <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1 min-w-0">
+        <div className="max-w-7xl mx-auto px-4 py-6 md:py-10 flex flex-col md:flex-row items-center gap-4 md:gap-8">
+          <div className="flex-1 min-w-0 w-full">
             {isFood ? (
               /* Live orders badge for food stores */
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4"
@@ -1163,37 +1155,46 @@ export default function StorePage() {
                 <StoreIcon type={store.type} size={12} color={tpl.heroColor} /> {tpl.navItems[0]} · Colección {new Date().getFullYear()}
               </div>
             )}
-            <h1 className="text-3xl md:text-5xl font-black leading-tight tracking-tight mb-3"
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-black leading-tight tracking-tight mb-2 md:mb-3"
               style={{ fontFamily: "var(--font-jakarta)", color: tpl.heroColor }}>
               {store.tagline || storeName}
             </h1>
-            <p className="text-sm mb-6 max-w-md" style={{ color: tpl.heroSubColor }}>
+            <p className="text-xs md:text-sm mb-4 md:mb-6 max-w-md" style={{ color: tpl.heroSubColor }}>
               {isFood
                 ? `${allProducts.length} platos · Delivery en 20 min · Pago con Nequi, Daviplata o efectivo`
                 : `${allProducts.length} productos · Envío a todo el país · Devoluciones gratis 30 días`}
             </p>
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-2 md:gap-3 flex-wrap">
               <a href="#productos"
-                className="px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                className="px-4 md:px-6 py-2.5 md:py-3 text-xs md:text-sm font-bold transition-opacity hover:opacity-90"
                 style={{ background: isFood ? "#f5c842" : pc, color: isFood ? "#111" : "#fff", borderRadius: tpl.heroBtnRadius }}>
-                {isFood ? "Ver menú completo →" : "Ver colección →"}
+                {isFood ? "Ver menú →" : "Ver colección →"}
               </a>
               {flashProducts.length > 0 && (
                 <a href="#flash"
-                  className="px-6 py-3 text-sm font-bold transition-all hover:opacity-80 flex items-center gap-2"
+                  className="px-4 md:px-6 py-2.5 md:py-3 text-xs md:text-sm font-bold transition-all hover:opacity-80 flex items-center gap-1.5"
                   style={{
                     border: tpl.heroIsDark ? "1.5px solid rgba(255,255,255,0.35)" : "1.5px solid rgba(0,0,0,0.2)",
                     color: tpl.heroColor,
                     borderRadius: tpl.heroBtnRadius,
                     background: tpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.04)",
                   }}>
-                  <Flame size={14} /> {isFood ? "Combos del día" : "Ofertas flash"}
+                  <Flame size={13} /> {isFood ? "Combos del día" : "Ofertas flash"}
                 </a>
               )}
             </div>
+            {/* Mobile trust strip */}
+            <div className="flex md:hidden gap-3 mt-4 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+              {tpl.trustItems.slice(0, 2).map((ti, i) => (
+                <div key={i} className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-semibold"
+                  style={{ background: tpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.65)", color: tpl.heroColor, border: tpl.heroIsDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(0,0,0,0.07)" }}>
+                  <CheckCircle size={12} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} />{ti.label}
+                </div>
+              ))}
+            </div>
           </div>
-          {/* Trust badges */}
-          <div className="flex-shrink-0 grid grid-cols-2 gap-2.5">
+          {/* Trust badges — desktop only */}
+          <div className="hidden md:grid flex-shrink-0 grid-cols-2 gap-2.5">
             {[
               { icon: isFood ? <Bike size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} /> : <Truck size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} />, ti: tpl.trustItems[0] },
               { icon: isFood ? <CheckCircle size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} /> : <Lock size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} />, ti: tpl.trustItems[1] },
@@ -1220,37 +1221,37 @@ export default function StorePage() {
       {/* ── Food: delivery mode + categories ───────────────── */}
       {isFood && (
         <section style={{ background: tpl.cardBg, borderBottom: `1px solid ${tpl.headerBorderColor}` }}>
-          <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-4">
             {/* Delivery mode toggle */}
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
               <div className="flex rounded-xl overflow-hidden p-0.5" style={{ background: "#222", border: "1px solid #333" }}>
                 <button
                   onClick={() => setDeliveryMode("domicilio")}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all"
+                  className="flex items-center gap-1.5 px-3 md:px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all"
                   style={{
                     background: deliveryMode === "domicilio" ? "#c0000a" : "transparent",
                     color: deliveryMode === "domicilio" ? "#fff" : "#888",
                   }}>
-                  <Bike size={15} /> Domicilio
+                  <Bike size={13} /> Domicilio
                 </button>
                 <button
                   onClick={() => setDeliveryMode("recoger")}
-                  className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all"
+                  className="flex items-center gap-1.5 px-3 md:px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all"
                   style={{
                     background: deliveryMode === "recoger" ? "#c0000a" : "transparent",
                     color: deliveryMode === "recoger" ? "#fff" : "#888",
                   }}>
-                  <MapPin size={15} /> Recoger
+                  <MapPin size={13} /> Recoger
                 </button>
               </div>
               {deliveryMode === "domicilio" && (
-                <span className="text-xs font-semibold flex items-center gap-1" style={{ color: "#888" }}>
-                  <Clock size={12} /> Aprox. 20-35 min
+                <span className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#888" }}>
+                  <Clock size={11} /> 20-35 min
                 </span>
               )}
               {deliveryMode === "recoger" && (
-                <span className="text-xs font-semibold flex items-center gap-1" style={{ color: "#2a9d5c" }}>
-                  <CheckCircle size={12} /> Listo en 15 min · Sin costo
+                <span className="text-[11px] font-semibold flex items-center gap-1" style={{ color: "#2a9d5c" }}>
+                  <CheckCircle size={11} /> Listo en 15 min
                 </span>
               )}
             </div>
@@ -1421,15 +1422,15 @@ export default function StorePage() {
       )}
 
       {/* ── All products grid ──────────────────────────────── */}
-      <section id="productos" className="py-8 px-4">
+      <section id="productos" className="py-6 md:py-8 px-3 md:px-4">
         <div className="max-w-7xl mx-auto">
           {/* Toolbar */}
-          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+          <div className="flex items-center justify-between mb-4 md:mb-5 flex-wrap gap-2 md:gap-3">
             <div>
-              <h2 className="text-2xl font-black" style={{ fontFamily: "var(--font-jakarta)", color: tpl.pageColor }}>
-                Todos los productos
+              <h2 className="text-lg md:text-2xl font-black" style={{ fontFamily: "var(--font-jakarta)", color: tpl.pageColor }}>
+                {isFood ? "Nuestro menú" : "Todos los productos"}
               </h2>
-              <p className="text-sm mt-0.5" style={{ color: tpl.pageMutedColor }}>
+              <p className="text-xs md:text-sm mt-0.5" style={{ color: tpl.pageMutedColor }}>
                 {filteredProducts.length} artículos{searchQuery ? ` para "${searchQuery}"` : ""}
               </p>
             </div>
