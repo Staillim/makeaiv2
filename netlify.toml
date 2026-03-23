@@ -2,12 +2,40 @@
   command = "npm run build"
   publish = ".next"
 
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
+
 # Next.js plugin
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# Environment variables documentation
-# Set these in Netlify dashboard: Site Settings > Environment Variables
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+
+# CRITICAL: Configure these environment variables in Netlify Dashboard
+# Go to: Site Settings > Environment Variables > Add Variable
+# Add these EXACT variable names with your values from .env.local:
+#
+# Variable 1:
+#   Key: NEXT_PUBLIC_SUPABASE_URL  
+#   Value: [Copy from your .env.local file]
+#
+# Variable 2:
+#   Key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+#   Value: [Copy from your .env.local file]  
+#
+# Variable 3:
+#   Key: ANTHROPIC_API_KEY
+#   Value: [Copy from your .env.local file]
+#
+# WITHOUT these variables, your site will show blank/errors!
 # 
 # Required variables:
 # NEXT_PUBLIC_SUPABASE_URL = "your-supabase-project-url"
