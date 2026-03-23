@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { createClient } from "@/lib/supabase/client";
 import { TypingIndicator } from "@/components/ui";
-import { Send, ArrowLeft, Eye, Smartphone, Monitor, Rocket, Truck, Lock, RotateCcw, Star, Store, Copy, Camera, Bot, Wrench, Package, Check } from "lucide-react";
+import { Send, ArrowLeft, Eye, Smartphone, Monitor, Rocket, Truck, Lock, RotateCcw, Star, Store, Copy, Camera, Bot, Wrench, Package, Check, Heart, Flame, Clock, Bike, ShoppingBag, Cpu, Utensils, ChevronRight } from "lucide-react";
 import type { Message, BuilderConfig, BuilderProduct, StoreLegacy, ProductLegacy } from "@/types";
 import { STORE_TEMPLATES } from "@/lib/data";
 
@@ -136,69 +136,180 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
   const name = config.name || "Mi Tienda";
   const tag  = config.tagline || "Bienvenido a nuestra colección";
   const type = config.type || "general";
-  const pal  = PALETTES[type] || PALETTES.general;
   const previewImages = PRODUCT_IMAGES[type] || PRODUCT_IMAGES.general;
   const exProds = EXAMPLE_PRODUCTS[type] || EXAMPLE_PRODUCTS.general;
   const rawProds = exProds.slice(0, config.columns || 3).map((p, i) => ({
     n: p.name,
+    price: p.price,
     p: `$${p.price.toLocaleString("es-CO")}`,
     img: previewImages[i % previewImages.length],
   }));
-  const cols = Math.min(config.columns||3, 3);
+  const cols = mode === "mobile" ? Math.min(config.columns||3, 2) : Math.min(config.columns||3, 3);
   const pTpl = STORE_TEMPLATES[(type || "general") as keyof typeof STORE_TEMPLATES] ?? STORE_TEMPLATES.general;
+  const isFood = type === "food";
+  const isFashion = type === "ropa" || type === "beauty";
 
   const inner = (
-    <div style={{ fontFamily:"sans-serif", color: pTpl.pageColor, background: pTpl.pageBg, minHeight:"100%" }}>
-      {/* Nav */}
-      <div style={{ padding:"8px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:`1px solid ${pTpl.headerBorderColor}`, background: pTpl.headerBg, position:"sticky", top:0, boxShadow:"0 1px 3px rgba(0,0,0,0.05)" }}>
+    <div style={{ fontFamily:"'Inter',sans-serif", color: pTpl.pageColor, background: pTpl.pageBg, minHeight:"100%" }}>
+      {/* ── Nav ── */}
+      <div style={{ padding:"8px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:`1px solid ${pTpl.headerBorderColor}`, background: pTpl.headerBg, position:"sticky", top:0, zIndex:20, boxShadow:"0 1px 4px rgba(0,0,0,0.08)" }}>
         <span style={{ fontWeight:800, fontSize:12, color: pTpl.headerColor }}>
           <span style={{ color: pc }}>{name[0]}</span>{name.slice(1)}
         </span>
-        <div style={{ display:"flex", gap:8, fontSize:9, color: pTpl.headerIsDark ? "rgba(255,255,255,0.5)" : "#aaa" }}>{pTpl.navItems.slice(0,3).join(" · ")}</div>
+        <div style={{ display:"flex", gap:8, fontSize:9, color: pTpl.headerIsDark ? "rgba(255,255,255,0.5)" : "#999" }}>{pTpl.navItems.slice(0,3).join(" · ")}</div>
         <div style={{ background: pc, color:"#fff", borderRadius: pTpl.btnRadius, padding:"3px 9px", fontSize:9, fontWeight:700 }}>Carrito 0</div>
       </div>
-      {/* Hero banner */}
-      <div style={{ background: pTpl.heroBg, padding:"18px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
-        <div>
-          <div style={{ fontSize:8, fontWeight:700, color: pTpl.heroColor, marginBottom:4, textTransform:"uppercase", letterSpacing:.5, opacity:.8 }}>{pTpl.navItems[1]} · Nueva</div>
-          <h1 style={{ fontWeight:800, fontSize:14, color: pTpl.heroColor, letterSpacing:-.3, lineHeight:1.3, marginBottom:4 }}>{tag || name}</h1>
-          <p style={{ fontSize:9, color: pTpl.heroSubColor, marginBottom:8 }}>{rawProds.length} productos</p>
-          <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.heroBtnRadius, padding:"5px 12px", fontSize:9, fontWeight:700, cursor:"pointer" }}>Ver colección →</button>
+
+      {/* ── Hero ── */}
+      <div style={{ background: pTpl.heroBg, padding: mode === "mobile" ? "14px 10px 12px" : "20px 14px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:7, fontWeight:700, color: pTpl.heroColor, marginBottom:3, textTransform:"uppercase", letterSpacing:.6, opacity:.7 }}>
+            {isFood ? "🔥 Pide ahora" : pTpl.navItems[1]+" · Nueva"}
+          </div>
+          <h1 style={{ fontWeight:900, fontSize: mode === "mobile" ? 11 : 14, color: pTpl.heroColor, letterSpacing:-.3, lineHeight:1.2, marginBottom:3 }}>{tag || name}</h1>
+          <p style={{ fontSize:7, color: pTpl.heroSubColor, marginBottom:6 }}>
+            {isFood ? `${rawProds.length} platos · Delivery en 20 min` : `${rawProds.length} productos · Envío a todo el país`}
+          </p>
+          <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.heroBtnRadius, padding:"4px 10px", fontSize:8, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 12px ${pc}44` }}>
+            {isFood ? "🛵 Pedir ahora →" : "Ver colección →"}
+          </button>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:4, flexShrink:0 }}>
-          {pTpl.trustItems.map((b,i)=>(
-            <div key={i} style={{ background: pTpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.07)", border:`1px solid ${pTpl.heroIsDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)"}`, borderRadius:6, padding:"4px 6px", fontSize:7, display:"flex", alignItems:"center", gap:3, color: pTpl.heroColor, fontWeight:600 }}>
-              {b.label}
-            </div>
-          ))}
-        </div>
+        {/* Trust strip — only desktop */}
+        {mode !== "mobile" && (
+          <div style={{ display:"flex", flexDirection:"column", gap:3, flexShrink:0 }}>
+            {pTpl.trustItems.slice(0,2).map((b,i)=>(
+              <div key={i} style={{ background: pTpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border:`1px solid ${pTpl.heroIsDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`, borderRadius:8, padding:"4px 8px", fontSize:7, display:"flex", alignItems:"center", gap:3, color: pTpl.heroColor, fontWeight:600, backdropFilter:"blur(4px)" }}>
+                {b.label}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-      {/* Products */}
+
+      {/* ── Featured mini carousel ── */}
+      {!isFood && rawProds.length > 0 && (
+        <div style={{ padding:"10px 14px 6px", borderBottom:`1px solid ${pTpl.headerBorderColor}` }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+            <span style={{ fontSize:9, fontWeight:800, color: pTpl.pageColor }}>⭐ Destacados</span>
+            <span style={{ fontSize:7, color: pc, fontWeight:600 }}>Ver todos →</span>
+          </div>
+          <div style={{ display:"flex", gap:5, overflowX:"auto" }}>
+            {rawProds.map((p,i) => (
+              <div key={i} style={{ flexShrink:0, width: isFashion ? 52 : 48, cursor:"pointer" }}>
+                <div style={{ height: isFashion ? 65 : 52, borderRadius:10, overflow:"hidden", position:"relative" }}>
+                  <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit: isFashion ? "cover" : "contain", padding: isFashion ? 0 : 3, background: pTpl.cardBg, display:"block" }} />
+                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)" }} />
+                  <div style={{ position:"absolute", bottom:2, left:3, right:3 }}>
+                    <span style={{ fontSize:6, fontWeight:800, color:"#f5c842" }}>{p.p}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Food: delivery toggle + categories ── */}
+      {isFood && (
+        <div style={{ padding:"8px 14px", borderBottom:`1px solid ${pTpl.headerBorderColor}`, background: pTpl.cardBg }}>
+          <div style={{ display:"flex", gap:4, marginBottom:6 }}>
+            <div style={{ background:"#c0000a", color:"#fff", padding:"3px 10px", borderRadius:50, fontSize:7, fontWeight:800, display:"flex", alignItems:"center", gap:3 }}>🛵 Domicilio</div>
+            <div style={{ background:"#222", color:"#888", padding:"3px 10px", borderRadius:50, fontSize:7, fontWeight:700 }}>📍 Recoger</div>
+          </div>
+          <div style={{ display:"flex", gap:4, overflowX:"auto" }}>
+            {["🔥 Todo", "🍕 Pizzas", "🍔 Combos", "🥤 Bebidas"].map((c,i) => (
+              <div key={i} style={{ background: i===0 ? pc : "rgba(255,255,255,0.06)", color: i===0 ? "#fff" : pTpl.pageMutedColor, padding:"3px 8px", borderRadius:50, fontSize:7, fontWeight:700, flexShrink:0, border: i===0 ? "none" : `1px solid ${pTpl.headerBorderColor}` }}>{c}</div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Products ── */}
       <div style={{ padding:"12px 14px" }}>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-          <p style={{ fontSize:10, fontWeight:800, color:"#111" }}>Productos destacados</p>
-          <p style={{ fontSize:8, color:"#bbb" }}>{rawProds.length} artículos</p>
+          <p style={{ fontSize:10, fontWeight:800, color: pTpl.pageColor }}>{isFood ? "🍽️ Menú del día" : "Productos"}</p>
+          <p style={{ fontSize:8, color: pTpl.pageMutedColor }}>{rawProds.length} artículos</p>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols},1fr)`, gap:6 }}>
-          {rawProds.slice(0,cols*2).map((p,i)=>(
-            <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "1px solid rgba(0,0,0,0.06)", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
-              {/* Image area */}
-              <div style={{ height:64, overflow:"hidden", position:"relative", background: pTpl.cardBg }}>
-                {i === 0 && <div style={{ position:"absolute", top:3, left:3, zIndex:2, background: pc, color:"#fff", borderRadius:3, padding:"1px 5px", fontSize:7, fontWeight:700 }}>Nuevo</div>}
-                <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"contain", display:"block", padding:4, background: pTpl.cardBg }} />
-              </div>
-              <div style={{ padding:"6px 7px" }}>
-                <div style={{ fontSize:9, fontWeight:600, color: pTpl.cardColor, marginBottom:3, lineHeight:1.3 }}>{p.n}</div>
-                {/* Stars */}
-                <div style={{ fontSize:9, color:"#f5a623", marginBottom:3 }}>★★★★<span style={{ color:"#e0e0e0" }}>★</span> <span style={{ color:"#bbb", fontSize:8 }}>(128)</span></div>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <span style={{ fontSize:10, fontWeight:800, color: pTpl.cardPriceColor }}>{p.p}</span>
-                  <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.btnRadius, padding:"2px 7px", fontSize:8, fontWeight:700, cursor:"pointer" }}>+ Agregar</button>
+          {rawProds.map((p,i) => {
+            if (isFood) {
+              /* ── Food card ── */
+              return (
+                <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "none", cursor:"pointer", position:"relative" }}>
+                  <div style={{ height:60, overflow:"hidden", position:"relative" }}>
+                    <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
+                    {/* Prep time */}
+                    <div style={{ position:"absolute", bottom:3, right:3, background:"rgba(0,0,0,0.7)", borderRadius:50, padding:"1px 5px", fontSize:6, color:"#fff", fontWeight:700, display:"flex", alignItems:"center", gap:2 }}>
+                      🕐 15-20 min
+                    </div>
+                    {i === 0 && <div style={{ position:"absolute", top:3, left:3, background:"#e63946", color:"#fff", borderRadius:4, padding:"1px 4px", fontSize:6, fontWeight:800 }}>🔥 -20%</div>}
+                  </div>
+                  <div style={{ padding:"5px 7px" }}>
+                    <div style={{ fontSize:8, fontWeight:700, color: pTpl.cardColor, marginBottom:2, lineHeight:1.3 }}>{p.n}</div>
+                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:3 }}>
+                      <span style={{ fontSize:10, fontWeight:800, color: pTpl.cardPriceColor }}>{p.p}</span>
+                    </div>
+                    <button style={{ width:"100%", background: pc, color:"#fff", border:"none", borderRadius:50, padding:"3px 0", fontSize:7, fontWeight:800, cursor:"pointer", boxShadow:`0 3px 10px ${pc}44` }}>+ Agregar</button>
+                  </div>
                 </div>
-                <div style={{ fontSize:7, color:"#2a9d5c", marginTop:2, fontWeight:600, display:"flex", alignItems:"center", gap:2 }}><Truck size={7} color="#2a9d5c"/> Envío gratis</div>
+              );
+            }
+
+            if (isFashion) {
+              /* ── Fashion / Beauty card (portrait, no Agregar button) ── */
+              return (
+                <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "none", cursor:"pointer", position:"relative" }}>
+                  <div style={{ height:80, overflow:"hidden", position:"relative" }}>
+                    <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                    <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 50%)" }} />
+                    {i === 0 && <div style={{ position:"absolute", top:3, left:3, zIndex:2, background: pc, color:"#fff", borderRadius:3, padding:"1px 5px", fontSize:6, fontWeight:700 }}>Nuevo</div>}
+                    {/* Name + price overlay on image */}
+                    <div style={{ position:"absolute", bottom:3, left:5, right:5, zIndex:2 }}>
+                      <div style={{ fontSize:7, fontWeight:700, color:"#fff", lineHeight:1.2, marginBottom:1 }}>{p.n}</div>
+                      <span style={{ fontSize:9, fontWeight:900, color:"#fff" }}>{p.p}</span>
+                    </div>
+                    {/* Heart */}
+                    <div style={{ position:"absolute", top:3, right:3, width:14, height:14, borderRadius:"50%", background:"rgba(255,255,255,0.9)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:2 }}>
+                      <span style={{ fontSize:7, lineHeight:1 }}>♡</span>
+                    </div>
+                  </div>
+                  <div style={{ padding:"4px 6px", display:"flex", alignItems:"center", justifyContent:"space-between", borderTop:`1px solid ${pTpl.headerBorderColor}` }}>
+                    <span style={{ fontSize:8, color:"#f5a623" }}>★★★★★</span>
+                    <span style={{ fontSize:7, color:"#2a9d5c", fontWeight:600 }}>Envío gratis</span>
+                  </div>
+                </div>
+              );
+            }
+
+            /* ── Tech / General card (no Agregar button, click opens detail) ── */
+            return (
+              <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "1px solid rgba(0,0,0,0.06)", cursor:"pointer", position:"relative", transition:"all 0.3s" }}>
+                <div style={{ height:64, overflow:"hidden", position:"relative", background: pTpl.cardBg }}>
+                  {i === 0 && <div style={{ position:"absolute", top:3, left:3, zIndex:2, background: pc, color:"#fff", borderRadius:3, padding:"1px 5px", fontSize:6, fontWeight:700 }}>Nuevo</div>}
+                  <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"contain", display:"block", padding:6, background: pTpl.cardBg }} />
+                  {/* Heart */}
+                  <div style={{ position:"absolute", top:3, right:3, width:14, height:14, borderRadius:"50%", background:"rgba(255,255,255,0.9)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 1px 3px rgba(0,0,0,0.1)" }}>
+                    <span style={{ fontSize:7, lineHeight:1 }}>♡</span>
+                  </div>
+                </div>
+                <div style={{ padding:"6px 7px" }}>
+                  <div style={{ fontSize:8, fontWeight:600, color: pTpl.cardColor, marginBottom:2, lineHeight:1.3 }}>{p.n}</div>
+                  <div style={{ fontSize:8, color:"#f5a623", marginBottom:2 }}>★★★★<span style={{ color:"#e0e0e0" }}>★</span></div>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <span style={{ fontSize:10, fontWeight:800, color: pTpl.cardPriceColor }}>{p.p}</span>
+                  </div>
+                  <div style={{ fontSize:7, color:"#2a9d5c", marginTop:2, fontWeight:600, display:"flex", alignItems:"center", gap:2 }}>
+                    <Truck size={7} color="#2a9d5c"/> Envío gratis
+                  </div>
+                  {/* CTA bar on hover */}
+                  <div style={{ marginTop:4, background: pc, color:"#fff", borderRadius: pTpl.btnRadius, padding:"3px 0", fontSize:7, fontWeight:700, textAlign:"center", opacity:0.9 }}>
+                    Ver detalles →
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
