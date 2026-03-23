@@ -1,9 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { StatCard, SectionHead } from "@/components/ui";
 import { MOCK_ANALYTICS, MOCK_ORDERS, MOCK_STORE, formatCOP } from "@/lib/data";
+import { createClient } from "@/lib/supabase/client";
 
 // Datos de prueba eliminados - conectar con Supabase notifications
 type Activity = {
@@ -15,15 +17,30 @@ const activity: Activity[] = [];
 export default function HomeSection() {
   const router = useRouter();
   const { stores, orders } = useAppStore();
+  const [userName, setUserName] = useState<string>("");
   const a = MOCK_ANALYTICS;
   const activeStores = stores.filter(s => s.active);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user;
+      if (!u) return;
+      const name =
+        u.user_metadata?.name ||
+        u.user_metadata?.full_name ||
+        u.email?.split("@")[0] ||
+        "Usuario";
+      setUserName(name);
+    });
+  }, []);
   const activeOrders = orders.filter(o => o.status !== "entregada" && o.status !== "devolucion");
   const pendingOrders = orders.filter(o => o.status === "pendiente");
 
   return (
     <div>
       <SectionHead
-        title="Bienvenido de nuevo, Juan"
+        title={`Bienvenido de nuevo, ${userName || "..."}`}
         sub="Resumen de tus negocios · Domingo 22 Mar 2024"
         action={
           <Link href="/builder" className="btn-primary">+ Nueva tienda</Link>

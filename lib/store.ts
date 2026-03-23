@@ -22,6 +22,7 @@ interface AppState {
   stores: StoreLegacy[];
   activeStoreId: string;
   setActiveStore: (id: string) => void;
+  setStores: (stores: StoreLegacy[]) => void;
   addStore: (store: StoreLegacy) => void;
   removeStore: (id: string) => void;
   updateOrder: (orderId: string, status: Order["status"]) => void;
@@ -67,6 +68,7 @@ export const useAppStore = create<AppState>()(
   stores: [],
   activeStoreId: "",
   setActiveStore: (id) => set({ activeStoreId: id }),
+  setStores: (stores) => set({ stores }),
   addStore: (store) =>
     set((state) => ({ stores: [...state.stores, store] })),
   removeStore: (id) =>

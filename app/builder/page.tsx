@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
+import { createClient } from "@/lib/supabase/client";
 import { TypingIndicator } from "@/components/ui";
 import { Send, ArrowLeft, Eye, Smartphone, Monitor, Rocket } from "lucide-react";
 import type { Message, BuilderConfig, BuilderProduct, StoreLegacy, ProductLegacy } from "@/types";
@@ -171,8 +172,7 @@ export default function BuilderPage() {
     return parseInt(p.replace(/[^0-9]/g, "")) || 0;
   }
 
-  function publishStore() {
-    const { name, type, primaryColor, secondaryColor, columns, style, tagline, products } = builderConfig;
+  async function publishStore() {    const { name, type, primaryColor, secondaryColor, columns, style, tagline, products } = builderConfig;
     if (!name) return;
 
     const existingSlugs = stores.map(s => s.slug);
@@ -184,27 +184,72 @@ export default function BuilderPage() {
       counter++;
     }
 
-    const storeId = `store-${Date.now()}`;
     const pal = PALETTES[type || "general"] || PALETTES.general;
 
     const fullProducts = (products || []).map((p: any, i: number) => ({
-      id: `prod-${Date.now()}-${i}`,
-      storeId,
       name: p.n || p.name || `Producto ${i + 1}`,
       sku: `SKU-${i + 1}`,
       description: p.d || p.description || "",
       price: typeof p.p === "number" ? p.p : parsePrice(String(p.p || "0")),
       stock: 50,
       category: type || "General",
-      variants: [],
       gradient: pal[i % pal.length] as [string, string],
       badge: i === 0 ? "Nuevo" : "",
-      active: true,
-      sales: 0,
     }));
 
+    // Try to save in Supabase first
+    let finalStoreId = `store-${Date.now()}`;
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: dbStore, error: storeErr } = await supabase
+          .from("stores")
+          .insert({
+            owner_id: user.id,
+            name,
+            slug,
+            tagline: tagline || "Bienvenido a nuestra tienda",
+            type: type || "general",
+            primary_color: primaryColor || "#7c5cfc",
+            secondary_color: secondaryColor || "#f43f8e",
+            columns: columns || 3,
+            style: style || "moderno",
+            active: true,
+            total_products: fullProducts.length,
+          })
+          .select()
+          .single();
+
+        if (!storeErr && dbStore) {
+          finalStoreId = dbStore.id;
+          if (fullProducts.length > 0) {
+            await supabase.from("products").insert(
+              fullProducts.map((p) => ({
+                store_id: finalStoreId,
+                name: p.name,
+                sku: p.sku,
+                description: p.description,
+                price: p.price,
+                stock: p.stock,
+                category: p.category,
+                variants: [],
+                gradient_from: p.gradient[0],
+                gradient_to: p.gradient[1],
+                badge: p.badge || "",
+                active: true,
+                sales: 0,
+              }))
+            );
+          }
+        }
+      }
+    } catch (_) {
+      // Supabase not available, save locally only
+    }
+
     addStore({
-      id: storeId,
+      id: finalStoreId,
       name,
       slug,
       tagline: tagline || "Bienvenido a nuestra tienda",
@@ -214,7 +259,21 @@ export default function BuilderPage() {
       columns: columns || 3,
       style: style || "moderno",
       active: true,
-      products: fullProducts,
+      products: fullProducts.map((p, i) => ({
+        id: `prod-${Date.now()}-${i}`,
+        storeId: finalStoreId,
+        name: p.name,
+        sku: p.sku,
+        description: p.description,
+        price: p.price,
+        stock: p.stock,
+        category: p.category,
+        variants: [],
+        gradient: p.gradient,
+        badge: p.badge,
+        active: true,
+        sales: 0,
+      })),
       createdAt: new Date().toISOString().split("T")[0],
     } as any);
 
