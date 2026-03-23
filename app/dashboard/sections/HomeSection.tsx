@@ -22,9 +22,9 @@ export default function HomeSection() {
   const activeStores = stores.filter(s => s.active);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      const u = data.user;
+    (async () => {
+      const supabase = createClient();
+      const { data: { user: u } } = await supabase.auth.getUser();
       if (!u) return;
       const name =
         u.user_metadata?.name ||
@@ -32,7 +32,7 @@ export default function HomeSection() {
         u.email?.split("@")[0] ||
         "Usuario";
       setUserName(name);
-    });
+    })();
   }, []);
   const activeOrders = orders.filter(o => o.status !== "entregada" && o.status !== "devolucion");
   const pendingOrders = orders.filter(o => o.status === "pendiente");

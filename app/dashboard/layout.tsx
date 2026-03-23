@@ -30,9 +30,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const title = ROUTE_LABELS[pathname] ?? "Dashboard";
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(async (res) => {
-      const u = res.data.user;
+    (async () => {
+      const supabase = createClient();
+      const { data: { user: u } } = await supabase.auth.getUser();
       if (!u) return;
 
       // Set initials
@@ -86,7 +86,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }));
         setStores(mapped);
       }
-    });
+    })();
   }, []);
 
   return (
