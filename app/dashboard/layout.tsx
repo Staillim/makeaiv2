@@ -31,8 +31,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data }) => {
-      const u = data.user;
+    supabase.auth.getUser().then(async (res) => {
+      const u = res.data.user;
       if (!u) return;
 
       // Set initials
