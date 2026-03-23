@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { TypingIndicator } from "@/components/ui";
 import { ShoppingCart, MessageCircle, X, Send, Search, Truck, Lock, RotateCcw, Star, Bot, Package, ShoppingBag, Cpu, Utensils, Sparkles, Home, CreditCard } from "lucide-react";
-import { formatCOP } from "@/lib/data";
+import { formatCOP, STORE_TEMPLATES } from "@/lib/data";
+import type { StoreTemplate } from "@/lib/data";
 import type { ProductLegacy as Product, Message } from "@/types";
 
 function StoreIcon({ type, size = 16, color = "#ccc" }: { type: string; size?: number; color?: string }) {
@@ -53,7 +54,7 @@ Responde en JSON:
 {"message":"tu mensaje (max 3 líneas)","quickReplies":["op1","op2"]}
 quickReplies max 3, puede ser [].`;
 
-function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAdd: (p: Product) => void; storeType: string }) {
+function ProductCard({ p, pc, onAdd, storeType, tpl }: { p: Product; pc: string; onAdd: (p: Product) => void; storeType: string; tpl: StoreTemplate }) {
   const [hovered, setHovered] = useState(false);
 
   // Pseudo-random discount based on price digits
@@ -67,10 +68,12 @@ function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAd
 
   return (
     <div
-      className="bg-white rounded-xl overflow-hidden cursor-pointer flex flex-col transition-all duration-200"
+      className="overflow-hidden cursor-pointer flex flex-col transition-all duration-200"
       style={{
-        border: "1px solid #e8e8e8",
-        boxShadow: hovered ? "0 6px 24px rgba(0,0,0,0.09)" : "0 1px 4px rgba(0,0,0,0.05)",
+        background: tpl.cardBg,
+        border: tpl.cardBorder,
+        borderRadius: tpl.cardRadius,
+        boxShadow: hovered ? "0 6px 24px rgba(0,0,0,0.14)" : "0 1px 4px rgba(0,0,0,0.05)",
         transform: hovered ? "translateY(-2px)" : "none",
       }}
       onMouseEnter={() => setHovered(true)}
@@ -78,10 +81,10 @@ function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAd
       onClick={() => onAdd(p)}
     >
       {/* Image area */}
-      <div className="relative overflow-hidden" style={{ height: 200, background: "#f7f7f7" }}>
+      <div className="relative overflow-hidden" style={{ height: 200, background: tpl.cardBg }}>
         {/* Product image or icon placeholder */}
         {p.image ? (
-          <img src={p.image} alt={p.name} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
+          <img src={p.image} alt={p.name} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"contain", padding:"12px", background: tpl.cardBg }} />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <StoreIcon type={storeType} size={72} color={hovered ? "#c0c0c0" : "#e0e0e0"} />
@@ -122,7 +125,7 @@ function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAd
 
       {/* Info */}
       <div className="p-3 flex flex-col flex-1">
-        <p className="text-sm font-medium leading-snug mb-1.5 line-clamp-2" style={{ color: "#1a1a2e" }}>
+        <p className="text-sm font-medium leading-snug mb-1.5 line-clamp-2" style={{ color: tpl.cardColor }}>
           {p.name}
         </p>
         <div className="flex items-center gap-1.5 mb-2">
@@ -134,7 +137,7 @@ function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAd
         )}
         <div className="mt-auto">
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="text-xl font-black" style={{ color: "#1a1a2e", fontFamily: "var(--font-jakarta)" }}>
+            <span className="text-xl font-black" style={{ color: tpl.cardPriceColor, fontFamily: "var(--font-jakarta)" }}>
               {formatCOP(p.price)}
             </span>
             {originalPrice && (
@@ -190,6 +193,7 @@ export default function StorePage() {
   const pc = store.primaryColor;
   const sc = store.secondaryColor;
   const storeName = store.name || "Mi Tienda";
+  const tpl: StoreTemplate = STORE_TEMPLATES[(store.type || "general") as keyof typeof STORE_TEMPLATES] ?? STORE_TEMPLATES.general;
 
   function addToCart(p: Product) {
     setCart(c=>[...c,p]);
@@ -252,23 +256,23 @@ export default function StorePage() {
   }
 
   return (
-    <div style={{ background: "#f3f4f6", minHeight: "100vh", fontFamily: "var(--font-jakarta)", color: "#1a1a2e" }}>
+    <div style={{ background: tpl.pageBg, minHeight: "100vh", fontFamily: "var(--font-jakarta)", color: tpl.pageColor }}>
 
       {/* ── Header ─────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white" style={{ borderBottom: "1px solid #e4e4e4", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+      <header className="sticky top-0 z-50" style={{ background: tpl.headerBg, borderBottom: `1px solid ${tpl.headerBorderColor}`, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
         <div className="max-w-7xl mx-auto flex items-center gap-4 px-6 py-3">
           {/* Logo */}
-          <div className="font-black text-xl flex-shrink-0" style={{ fontFamily: "var(--font-jakarta)", color: "#1a1a2e" }}>
+          <div className="font-black text-xl flex-shrink-0" style={{ fontFamily: "var(--font-jakarta)", color: tpl.headerColor }}>
             <span style={{ color: pc }}>{storeName[0]}</span>{storeName.slice(1)}
           </div>
 
           {/* Search bar */}
           <div className="hidden md:flex flex-1 items-center rounded-lg overflow-hidden max-w-xl"
-            style={{ border: "1.5px solid #d0d0d0", background: "#f9f9f9" }}>
+            style={{ border: `1.5px solid ${tpl.headerBorderColor}`, background: tpl.headerIsDark ? "rgba(255,255,255,0.07)" : "#f9f9f9" }}>
             <input
               placeholder={`Buscar en ${storeName}...`}
               className="flex-1 px-4 py-2 text-sm bg-transparent outline-none"
-              style={{ color: "#333" }} />
+              style={{ color: tpl.headerColor }} />
             <button className="flex items-center justify-center px-4 py-2.5"
               style={{ background: pc }}>
               <Search size={15} color="white" />
@@ -291,12 +295,12 @@ export default function StorePage() {
         </div>
 
         {/* Category nav */}
-        <div className="border-t" style={{ borderColor: "#f0f0f0" }}>
+        <div className="border-t" style={{ borderColor: tpl.headerBorderColor, background: tpl.headerBg }}>
           <div className="max-w-7xl mx-auto flex items-center gap-6 px-6 py-2 overflow-x-auto no-scrollbar">
-            {["Inicio", "Colección", "Ofertas", "Novedades", "Nosotros"].map(item => (
-              <a key={item} href={item === "Colección" ? "#productos" : "#"}
+            {tpl.navItems.map((item, idx) => (
+              <a key={item} href={idx === 1 ? "#productos" : "#"}
                 className="text-xs font-semibold whitespace-nowrap transition-colors hover:opacity-80"
-                style={{ color: item === "Inicio" ? pc : "#555" }}>
+                style={{ color: idx === 0 ? pc : tpl.headerIsDark ? "rgba(255,255,255,0.55)" : "#555" }}>
                 {item}
               </a>
             ))}
@@ -305,30 +309,35 @@ export default function StorePage() {
       </header>
 
       {/* ── Hero banner ────────────────────────────────────── */}
-      <section className="bg-white" style={{ borderBottom: "1px solid #e4e4e4" }}>
-        <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row items-center gap-8">
+      <section style={{ background: tpl.heroBg }}>
+        <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center gap-8">
           {/* Text */}
           <div className="flex-1 min-w-0">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4"
-              style={{ background: `${pc}15`, color: pc }}>
-              <StoreIcon type={store.type} size={12} color={pc}/> {store.type?.charAt(0).toUpperCase() + store.type?.slice(1)} · Colección {new Date().getFullYear()}
+              style={{ background: tpl.heroIsDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.08)", color: tpl.heroColor }}>
+              <StoreIcon type={store.type} size={12} color={tpl.heroColor}/> {tpl.navItems[0]} · Colección {new Date().getFullYear()}
             </div>
             <h1 className="text-3xl md:text-5xl font-black leading-tight tracking-tight mb-3"
-              style={{ fontFamily: "var(--font-jakarta)", color: "#111" }}>
+              style={{ fontFamily: "var(--font-jakarta)", color: tpl.heroColor }}>
               {store.tagline || storeName}
             </h1>
-            <p className="text-sm mb-6 max-w-md" style={{ color: "#777" }}>
+            <p className="text-sm mb-6 max-w-md" style={{ color: tpl.heroSubColor }}>
               {store.products.length} productos disponibles · Envío a todo el país · Devoluciones gratis 30 días
             </p>
             <div className="flex gap-3 flex-wrap">
               <a href="#productos"
-                className="px-6 py-3 rounded-lg text-sm font-bold text-white transition-opacity hover:opacity-90"
-                style={{ background: pc }}>
+                className="px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                style={{ background: pc, borderRadius: tpl.heroBtnRadius }}>
                 Ver colección →
               </a>
               <a href="#productos"
-                className="px-6 py-3 rounded-lg text-sm font-bold transition-colors hover:bg-gray-50"
-                style={{ border: "1.5px solid #d0d0d0", color: "#444" }}>
+                className="px-6 py-3 text-sm font-bold transition-all hover:opacity-80"
+                style={{
+                  border: tpl.heroIsDark ? "1.5px solid rgba(255,255,255,0.35)" : "1.5px solid rgba(0,0,0,0.2)",
+                  color: tpl.heroColor,
+                  borderRadius: tpl.heroBtnRadius,
+                  background: tpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
+                }}>
                 Ver ofertas
               </a>
             </div>
@@ -336,17 +345,21 @@ export default function StorePage() {
           {/* Trust boxes */}
           <div className="flex-shrink-0 grid grid-cols-2 gap-2.5">
             {[
-              { icon: <Truck size={20} color={pc}/>, label: "Envío gratis", sub: "Desde $50.000" },
-              { icon: <Lock size={20} color={pc}/>, label: "Pago seguro", sub: "SSL 256-bit" },
-              { icon: <RotateCcw size={20} color={pc}/>, label: "Devoluciones", sub: "30 días libres" },
-              { icon: <Star size={20} color="#f5a623"/>, label: "4.9 / 5", sub: "+2.400 reseñas" },
+              { icon: <Truck size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor}/>, ti: tpl.trustItems[0] },
+              { icon: <Lock size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor}/>, ti: tpl.trustItems[1] },
+              { icon: <RotateCcw size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor}/>, ti: tpl.trustItems[2] },
+              { icon: <Star size={20} color="#f5c842"/>, ti: tpl.trustItems[3] },
             ].map((b, idx) => (
-              <div key={idx} className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white"
-                style={{ border: "1px solid #e8e8e8", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+              <div key={idx} className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+                style={{
+                  background: tpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.65)",
+                  border: tpl.heroIsDark ? "1px solid rgba(255,255,255,0.15)" : "1px solid rgba(0,0,0,0.07)",
+                  backdropFilter: "blur(4px)",
+                }}>
                 {b.icon}
                 <div>
-                  <p className="text-xs font-bold" style={{ color: "#1a1a2e" }}>{b.label}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "#aaa" }}>{b.sub}</p>
+                  <p className="text-xs font-bold" style={{ color: tpl.heroColor }}>{b.ti.label}</p>
+                  <p className="text-[10px] mt-0.5" style={{ color: tpl.heroSubColor }}>{b.ti.sub}</p>
                 </div>
               </div>
             ))}
@@ -360,16 +373,16 @@ export default function StorePage() {
           {/* Toolbar */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
-              <h2 className="text-2xl font-black" style={{ fontFamily: "var(--font-jakarta)" }}>
+              <h2 className="text-2xl font-black" style={{ fontFamily: "var(--font-jakarta)", color: tpl.pageColor }}>
                 Productos destacados
               </h2>
-              <p className="text-sm mt-0.5" style={{ color: "#999" }}>
+              <p className="text-sm mt-0.5" style={{ color: tpl.pageMutedColor }}>
                 {store.products.length} artículos disponibles
               </p>
             </div>
             <div className="flex items-center gap-2">
               <select className="text-xs px-3 py-2 rounded-lg outline-none"
-                style={{ border: "1px solid #d0d0d0", background: "#fff", color: "#555" }}>
+                style={{ border: `1px solid ${tpl.headerBorderColor}`, background: tpl.cardBg, color: tpl.cardColor }}>
                 <option>Más relevantes</option>
                 <option>Menor precio</option>
                 <option>Mayor precio</option>
@@ -387,7 +400,7 @@ export default function StorePage() {
           ) : (
             <div className={`grid gap-4 grid-cols-2 ${store.columns >= 4 ? "lg:grid-cols-4" : store.columns === 3 ? "md:grid-cols-3 lg:grid-cols-3" : "md:grid-cols-2"}`}>
               {store.products.map(p => (
-                <ProductCard key={p.id} p={p} pc={pc} onAdd={addToCart} storeType={store.type} />
+                <ProductCard key={p.id} p={p} pc={pc} onAdd={addToCart} storeType={store.type} tpl={tpl} />
               ))}
             </div>
           )}
@@ -395,44 +408,44 @@ export default function StorePage() {
       </section>
 
       {/* ── Footer ─────────────────────────────────────────── */}
-      <footer className="mt-10 py-10 px-6 bg-white" style={{ borderTop: "1px solid #e4e4e4" }}>
+      <footer className="mt-10 py-10 px-6" style={{ background: tpl.footerBg }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
           <div>
-            <div className="font-black text-lg mb-2" style={{ fontFamily: "var(--font-jakarta)", color: "#111" }}>
+            <div className="font-black text-lg mb-2" style={{ fontFamily: "var(--font-jakarta)", color: tpl.footerColor }}>
               <span style={{ color: pc }}>{storeName[0]}</span>{storeName.slice(1)}
             </div>
-            <p className="text-xs max-w-xs" style={{ color: "#aaa" }}>
+            <p className="text-xs max-w-xs" style={{ color: tpl.footerSubColor }}>
               Tienda oficial · Productos de calidad · Envío a todo Colombia
             </p>
           </div>
           <div className="flex flex-wrap gap-8 text-xs">
             <div>
-              <p className="font-bold mb-2" style={{ color: "#555" }}>Tienda</p>
-              {["Colección", "Ofertas", "Novedades"].map(l => (
-                <a key={l} href="#" className="block mb-1.5 hover:underline" style={{ color: "#999" }}>{l}</a>
+              <p className="font-bold mb-2" style={{ color: tpl.footerColor }}>{tpl.navItems[0]}</p>
+              {tpl.navItems.slice(1, 4).map(l => (
+                <a key={l} href="#productos" className="block mb-1.5 hover:underline" style={{ color: tpl.footerSubColor }}>{l}</a>
               ))}
             </div>
             <div>
-              <p className="font-bold mb-2" style={{ color: "#555" }}>Ayuda</p>
+              <p className="font-bold mb-2" style={{ color: tpl.footerColor }}>Ayuda</p>
               {["Envíos", "Devoluciones", "Contacto"].map(l => (
-                <a key={l} href="#" className="block mb-1.5 hover:underline" style={{ color: "#999" }}>{l}</a>
+                <a key={l} href="#" className="block mb-1.5 hover:underline" style={{ color: tpl.footerSubColor }}>{l}</a>
               ))}
             </div>
             <div>
-              <p className="font-bold mb-2" style={{ color: "#555" }}>Pago seguro</p>
+              <p className="font-bold mb-2" style={{ color: tpl.footerColor }}>Pago seguro</p>
               <div className="flex gap-2 flex-wrap">
                 {["Visa", "Mastercard", "PSE", "Efecty"].map(m => (
                   <span key={m} className="px-2 py-1 rounded text-[10px] font-semibold"
-                    style={{ background: "#f4f4f4", color: "#777", border: "1px solid #e8e8e8" }}>{m}</span>
+                    style={{ background: "rgba(255,255,255,0.08)", color: tpl.footerColor, border: `1px solid ${tpl.footerSubColor}` }}>{m}</span>
                 ))}
               </div>
             </div>
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-8 pt-6 flex items-center justify-between flex-wrap gap-3"
-          style={{ borderTop: "1px solid #f0f0f0" }}>
-          <p className="text-[11px]" style={{ color: "#ccc" }}>© {new Date().getFullYear()} {storeName} · Powered by Maket AI</p>
-          <p className="text-[11px]" style={{ color: "#ccc" }}>Todos los derechos reservados</p>
+          style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+          <p className="text-[11px]" style={{ color: tpl.footerSubColor }}>© {new Date().getFullYear()} {storeName} · Powered by Maket AI</p>
+          <p className="text-[11px]" style={{ color: tpl.footerSubColor }}>Todos los derechos reservados</p>
         </div>
       </footer>
 

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { TypingIndicator } from "@/components/ui";
 import { Send, ArrowLeft, Eye, Smartphone, Monitor, Rocket, Truck, Lock, RotateCcw, Star, Store, Copy, Camera, Bot, Wrench, Package, Check } from "lucide-react";
 import type { Message, BuilderConfig, BuilderProduct, StoreLegacy, ProductLegacy } from "@/types";
+import { STORE_TEMPLATES } from "@/lib/data";
 
 const BUILDER_SYSTEM = `Eres el Agente Constructor de Maket AI, experto en crear tiendas online.
 Tu trabajo: hacer preguntas naturales y recopilar información para construir la tienda perfecta.
@@ -144,34 +145,30 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
     img: previewImages[i % previewImages.length],
   }));
   const cols = Math.min(config.columns||3, 3);
+  const pTpl = STORE_TEMPLATES[(type || "general") as keyof typeof STORE_TEMPLATES] ?? STORE_TEMPLATES.general;
 
   const inner = (
-    <div style={{ fontFamily:"sans-serif", color:"#1a1a2e", background:"#f3f4f6", minHeight:"100%" }}>
+    <div style={{ fontFamily:"sans-serif", color: pTpl.pageColor, background: pTpl.pageBg, minHeight:"100%" }}>
       {/* Nav */}
-      <div style={{ padding:"8px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:"1px solid #e4e4e4", background:"#fff", position:"sticky", top:0, boxShadow:"0 1px 3px rgba(0,0,0,0.05)" }}>
-        <span style={{ fontWeight:800, fontSize:12, color:"#1a1a2e" }}>
+      <div style={{ padding:"8px 14px", display:"flex", alignItems:"center", justifyContent:"space-between", borderBottom:`1px solid ${pTpl.headerBorderColor}`, background: pTpl.headerBg, position:"sticky", top:0, boxShadow:"0 1px 3px rgba(0,0,0,0.05)" }}>
+        <span style={{ fontWeight:800, fontSize:12, color: pTpl.headerColor }}>
           <span style={{ color: pc }}>{name[0]}</span>{name.slice(1)}
         </span>
-        <div style={{ display:"flex", gap:8, fontSize:9, color:"#aaa" }}>Inicio · Colección · Ofertas</div>
-        <div style={{ background: pc, color:"#fff", borderRadius:6, padding:"3px 9px", fontSize:9, fontWeight:700 }}>Carrito 0</div>
+        <div style={{ display:"flex", gap:8, fontSize:9, color: pTpl.headerIsDark ? "rgba(255,255,255,0.5)" : "#aaa" }}>{pTpl.navItems.slice(0,3).join(" · ")}</div>
+        <div style={{ background: pc, color:"#fff", borderRadius: pTpl.btnRadius, padding:"3px 9px", fontSize:9, fontWeight:700 }}>Carrito 0</div>
       </div>
       {/* Hero banner */}
-      <div style={{ background:"#fff", padding:"18px 14px", borderBottom:"1px solid #e4e4e4", display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
+      <div style={{ background: pTpl.heroBg, padding:"18px 14px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:8 }}>
         <div>
-          <div style={{ fontSize:8, fontWeight:700, color: pc, marginBottom:4, textTransform:"uppercase", letterSpacing:.5 }}>{type} · Colección nueva</div>
-          <h1 style={{ fontWeight:800, fontSize:14, color:"#111", letterSpacing:-.3, lineHeight:1.3, marginBottom:4 }}>{tag || name}</h1>
-          <p style={{ fontSize:9, color:"#999", marginBottom:8 }}>{rawProds.length} productos · Envío gratis</p>
-          <button style={{ background: pc, color:"#fff", border:"none", borderRadius:6, padding:"5px 12px", fontSize:9, fontWeight:700, cursor:"pointer" }}>Ver colección →</button>
+          <div style={{ fontSize:8, fontWeight:700, color: pTpl.heroColor, marginBottom:4, textTransform:"uppercase", letterSpacing:.5, opacity:.8 }}>{pTpl.navItems[1]} · Nueva</div>
+          <h1 style={{ fontWeight:800, fontSize:14, color: pTpl.heroColor, letterSpacing:-.3, lineHeight:1.3, marginBottom:4 }}>{tag || name}</h1>
+          <p style={{ fontSize:9, color: pTpl.heroSubColor, marginBottom:8 }}>{rawProds.length} productos</p>
+          <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.heroBtnRadius, padding:"5px 12px", fontSize:9, fontWeight:700, cursor:"pointer" }}>Ver colección →</button>
         </div>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:4, flexShrink:0 }}>
-          {[
-            { ic:<Truck size={9} color="#555"/>, lb:"Envío gratis" },
-            { ic:<Lock size={9} color="#555"/>, lb:"Pago seguro" },
-            { ic:<RotateCcw size={9} color="#555"/>, lb:"Devoluciones" },
-            { ic:<Star size={9} color="#f5a623"/>, lb:"4.9 estrellas" },
-          ].map((b,i)=>(
-            <div key={i} style={{ background:"#f9f9f9", border:"1px solid #eee", borderRadius:6, padding:"4px 6px", fontSize:8, display:"flex", alignItems:"center", gap:3 }}>
-              {b.ic}<span style={{ color:"#555", fontWeight:600 }}>{b.lb}</span>
+          {pTpl.trustItems.map((b,i)=>(
+            <div key={i} style={{ background: pTpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.07)", border:`1px solid ${pTpl.heroIsDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)"}`, borderRadius:6, padding:"4px 6px", fontSize:7, display:"flex", alignItems:"center", gap:3, color: pTpl.heroColor, fontWeight:600 }}>
+              {b.label}
             </div>
           ))}
         </div>
@@ -184,19 +181,19 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
         </div>
         <div style={{ display:"grid", gridTemplateColumns:`repeat(${cols},1fr)`, gap:6 }}>
           {rawProds.slice(0,cols*2).map((p,i)=>(
-            <div key={i} style={{ borderRadius:10, overflow:"hidden", background:"#fff", border:"1px solid #e8e8e8", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+            <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "1px solid rgba(0,0,0,0.06)", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
               {/* Image area */}
-              <div style={{ height:64, overflow:"hidden", position:"relative", background:"#f8f8f8" }}>
+              <div style={{ height:64, overflow:"hidden", position:"relative", background: pTpl.cardBg }}>
                 {i === 0 && <div style={{ position:"absolute", top:3, left:3, zIndex:2, background: pc, color:"#fff", borderRadius:3, padding:"1px 5px", fontSize:7, fontWeight:700 }}>Nuevo</div>}
-                <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"contain", display:"block", padding:4 }} />
+                <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"contain", display:"block", padding:4, background: pTpl.cardBg }} />
               </div>
               <div style={{ padding:"6px 7px" }}>
-                <div style={{ fontSize:9, fontWeight:600, color:"#1a1a2e", marginBottom:3, lineHeight:1.3 }}>{p.n}</div>
+                <div style={{ fontSize:9, fontWeight:600, color: pTpl.cardColor, marginBottom:3, lineHeight:1.3 }}>{p.n}</div>
                 {/* Stars */}
                 <div style={{ fontSize:9, color:"#f5a623", marginBottom:3 }}>★★★★<span style={{ color:"#e0e0e0" }}>★</span> <span style={{ color:"#bbb", fontSize:8 }}>(128)</span></div>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <span style={{ fontSize:10, fontWeight:800, color:"#1a1a2e" }}>{p.p}</span>
-                  <button style={{ background: pc, color:"#fff", border:"none", borderRadius:4, padding:"2px 7px", fontSize:8, fontWeight:700, cursor:"pointer" }}>+ Agregar</button>
+                  <span style={{ fontSize:10, fontWeight:800, color: pTpl.cardPriceColor }}>{p.p}</span>
+                  <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.btnRadius, padding:"2px 7px", fontSize:8, fontWeight:700, cursor:"pointer" }}>+ Agregar</button>
                 </div>
                 <div style={{ fontSize:7, color:"#2a9d5c", marginTop:2, fontWeight:600, display:"flex", alignItems:"center", gap:2 }}><Truck size={7} color="#2a9d5c"/> Envío gratis</div>
               </div>
