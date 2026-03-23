@@ -1,6 +1,5 @@
 [build]
   command = "npm run build"
-  # Let @netlify/plugin-nextjs handle the publish directory automatically
 
 [build.environment]
   NODE_VERSION = "20"
@@ -9,8 +8,6 @@
 # ESSENTIAL: Next.js plugin for App Router + API routes support  
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-# No manual redirects needed - plugin handles this automatically
 
 # Security headers
 [[headers]]
@@ -38,30 +35,3 @@
 #   Value: [Copy from your .env.local file]
 #
 # WITHOUT these variables, your site will show blank/errors!
-# 
-# Required variables:
-# NEXT_PUBLIC_SUPABASE_URL = "your-supabase-project-url"
-# NEXT_PUBLIC_SUPABASE_ANON_KEY = "your-supabase-anon-key"
-# ANTHROPIC_API_KEY = "your-anthropic-api-key" (optional)
-
-# Redirects for SPA routes
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  force = false
-  conditions = {Role = ["app"]}
-
-# Headers for security
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
-# Build settings
-[build.environment]
-  NODE_VERSION = "20"
-  NPM_FLAGS = "--omit=dev"
