@@ -174,7 +174,7 @@ function ProductModal({ p, pc, tpl, onClose, onAddToCart }: {
         {/* Image Gallery */}
         <div style={{ background: tpl.cardBg }}>
           {/* Main image */}
-          <div className="relative" style={{ height: 340 }}>
+          <div className="relative" style={{ height: "clamp(200px, 40vh, 340px)" }}>
             {imgs.length > 0 ? (
               <img src={imgs[activeImg]} alt={p.name} className="w-full h-full"
                 style={{ objectFit: isFashion ? "cover" : "contain", padding: isFashion ? 0 : 32, background: tpl.cardBg }} />
@@ -220,8 +220,7 @@ function ProductModal({ p, pc, tpl, onClose, onAddToCart }: {
         </div>
 
         {/* Product Info */}
-        <div className="px-4 pt-4 pb-2" style={{ background: tpl.pageBg }}>
-
+          <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2" style={{ background: tpl.pageBg }}>
           {/* Badges row */}
           <div className="flex gap-2 mb-3 flex-wrap">
             {meta.isNew && <span className="px-2.5 py-1 rounded-full text-[11px] font-bold text-white" style={{ background: pc }}>NUEVO</span>}
@@ -230,7 +229,7 @@ function ProductModal({ p, pc, tpl, onClose, onAddToCart }: {
           </div>
 
           {/* Name */}
-          <h1 className="text-xl font-black leading-snug mb-2" style={{ color: tpl.cardColor }}>{p.name}</h1>
+          <h1 className="text-base sm:text-xl font-black leading-snug mb-2" style={{ color: tpl.cardColor }}>{p.name}</h1>
 
           {/* Rating + social proof */}
           <div className="flex items-center gap-4 mb-4 flex-wrap">
@@ -244,8 +243,8 @@ function ProductModal({ p, pc, tpl, onClose, onAddToCart }: {
 
           {/* Price block */}
           <div className="rounded-2xl p-4 mb-4" style={{ background: `${pc}0d`, border: `1px solid ${pc}25` }}>
-            <div className="flex items-baseline gap-3 mb-1.5 flex-wrap">
-              <span className="text-3xl font-black" style={{ color: tpl.cardPriceColor }}>{formatCOP(p.price)}</span>
+            <div className="flex items-baseline gap-2 mb-1.5 flex-wrap">
+              <span className="text-2xl sm:text-3xl font-black" style={{ color: tpl.cardPriceColor }}>{formatCOP(p.price)}</span>
               {meta.originalPrice && <>
                 <span className="text-sm line-through" style={{ color: "#bbb" }}>{formatCOP(meta.originalPrice)}</span>
                 <span className="px-2.5 py-1 rounded-full text-xs font-black text-white" style={{ background: "#e63946" }}>-{meta.discountPct}%</span>
@@ -372,7 +371,7 @@ function ProductModal({ p, pc, tpl, onClose, onAddToCart }: {
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-black" style={{ color: tpl.cardColor }}>Reseñas</p>
               <div className="flex items-center gap-1.5">
-                <span className="text-2xl font-black" style={{ color: pc }}>{meta.ratingVal}</span>
+                <span className="text-xl sm:text-2xl font-black" style={{ color: pc }}>{meta.ratingVal}</span>
                 <div>
                   <StarRating value={meta.ratingVal} />
                   <p className="text-[10px] mt-0.5" style={{ color: "#999" }}>{meta.reviewCount} reseñas</p>
@@ -384,7 +383,7 @@ function ProductModal({ p, pc, tpl, onClose, onAddToCart }: {
             ].map(([name, stars, text]) => (
               <div key={String(name)} className="py-3" style={{ borderTop: `1px solid ${tpl.headerBorderColor}` }}>
                 <div className="flex items-center gap-2 mb-1">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
                     style={{ background: pc }}>{String(name)[0]}</div>
                   <div>
                     <p className="text-xs font-bold" style={{ color: tpl.cardColor }}>{name}</p>
@@ -1206,6 +1205,7 @@ export default function StorePage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [sortBy, setSortBy] = useState("relevantes");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterCat, setFilterCat] = useState("all");
 
   // Food-specific state
   const [deliveryMode, setDeliveryMode] = useState<"domicilio" | "recoger">("domicilio");
@@ -1256,9 +1256,9 @@ export default function StorePage() {
   const filteredProducts = allProducts
     .filter(p => {
       const matchSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchCategory = !isFood || activeCategory === "all" ||
-        p.category.toLowerCase().includes(activeCategory.toLowerCase()) ||
-        p.name.toLowerCase().includes(activeCategory.toLowerCase());
+      const matchCategory = isFood
+        ? (activeCategory === "all" || p.category.toLowerCase().includes(activeCategory.toLowerCase()) || p.name.toLowerCase().includes(activeCategory.toLowerCase()))
+        : (filterCat === "all" || p.category.toLowerCase().includes(filterCat.toLowerCase()) || p.name.toLowerCase().includes(filterCat.toLowerCase()));
       return matchSearch && matchCategory;
     })
     .sort((a, b) => {
@@ -1415,11 +1415,22 @@ export default function StorePage() {
         <div className="border-t" style={{ borderColor: tpl.headerBorderColor }}>
           <div className="max-w-7xl mx-auto flex items-center gap-6 px-4 py-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
             {tpl.navItems.map((item, idx) => (
-              <a key={item} href={idx === 1 ? "#productos" : "#"}
-                className="text-xs font-semibold whitespace-nowrap transition-colors hover:opacity-80"
-                style={{ color: idx === 0 ? pc : tpl.headerIsDark ? "rgba(255,255,255,0.55)" : "#555" }}>
+              <button key={item}
+                onClick={() => {
+                  if (isFood) setActiveCategory(idx === 0 ? "all" : item);
+                  else setFilterCat(idx === 0 ? "all" : item);
+                  document.getElementById("productos")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="text-xs font-semibold whitespace-nowrap transition-colors hover:opacity-80 bg-transparent border-none cursor-pointer"
+                style={{
+                  color: (isFood ? (idx === 0 ? activeCategory === "all" : activeCategory === item) : (idx === 0 ? filterCat === "all" : filterCat === item))
+                    ? pc : tpl.headerIsDark ? "rgba(255,255,255,0.55)" : "#555",
+                  borderBottom: (isFood ? (idx === 0 ? activeCategory === "all" : activeCategory === item) : (idx === 0 ? filterCat === "all" : filterCat === item))
+                    ? `2px solid ${pc}` : "2px solid transparent",
+                  paddingBottom: 4,
+                }}>
                 {item}
-              </a>
+              </button>
             ))}
           </div>
         </div>
@@ -1714,13 +1725,13 @@ export default function StorePage() {
       <section id="productos" className="py-6 md:py-8 px-3 md:px-4">
         <div className="max-w-7xl mx-auto">
           {/* Toolbar */}
-          <div className="flex items-center justify-between mb-4 md:mb-5 flex-wrap gap-2 md:gap-3">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <div>
-              <h2 className="text-lg md:text-2xl font-black" style={{ fontFamily: "var(--font-jakarta)", color: tpl.pageColor }}>
+              <h2 className="text-base md:text-2xl font-black" style={{ fontFamily: "var(--font-jakarta)", color: tpl.pageColor }}>
                 {isFood ? "Nuestro menú" : "Todos los productos"}
               </h2>
-              <p className="text-xs md:text-sm mt-0.5" style={{ color: tpl.pageMutedColor }}>
-                {filteredProducts.length} artículos{searchQuery ? ` para "${searchQuery}"` : ""}
+              <p className="text-xs mt-0.5" style={{ color: tpl.pageMutedColor }}>
+                {filteredProducts.length} artículo{filteredProducts.length !== 1 ? "s" : ""}{searchQuery ? ` · "${searchQuery}"` : ""}{!isFood && filterCat !== "all" ? ` · ${filterCat}` : ""}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -1731,13 +1742,13 @@ export default function StorePage() {
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   placeholder="Buscar..."
-                  className="px-3 py-1.5 text-xs bg-transparent outline-none w-28"
+                  className="px-2 py-1.5 text-xs bg-transparent outline-none w-24"
                   style={{ color: tpl.cardColor }} />
-                <span className="px-2"><Search size={12} color={tpl.pageMutedColor} /></span>
+                <span className="px-2"><Search size={11} color={tpl.pageMutedColor} /></span>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+              <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs"
                 style={{ border: `1px solid ${tpl.headerBorderColor}`, background: tpl.cardBg, color: tpl.cardColor }}>
-                <Filter size={12} />
+                <Filter size={11} />
                 <select
                   value={sortBy}
                   onChange={e => setSortBy(e.target.value)}
@@ -1748,10 +1759,43 @@ export default function StorePage() {
                   <option value="mayor">Mayor precio</option>
                   <option value="descuento">Más descuento</option>
                 </select>
-                <ChevronDown size={12} />
               </div>
+              {filterCat !== "all" && !isFood && (
+                <button onClick={() => setFilterCat("all")} className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold"
+                  style={{ background: `${pc}15`, color: pc, border: `1px solid ${pc}40` }}>
+                  <X size={10} /> {filterCat}
+                </button>
+              )}
             </div>
           </div>
+
+          {/* ── Category filter pills ── */}
+          {!isFood && (
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-4" style={{ scrollbarWidth: "none" }}>
+              <button
+                onClick={() => setFilterCat("all")}
+                className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all"
+                style={{
+                  background: filterCat === "all" ? pc : "transparent",
+                  color: filterCat === "all" ? "#fff" : tpl.pageMutedColor,
+                  border: `1.5px solid ${filterCat === "all" ? pc : tpl.headerBorderColor}`,
+                }}>
+                🏷️ Todos
+              </button>
+              {tpl.navItems.map(cat => (
+                <button key={cat}
+                  onClick={() => setFilterCat(cat)}
+                  className="flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap"
+                  style={{
+                    background: filterCat === cat ? pc : "transparent",
+                    color: filterCat === cat ? "#fff" : tpl.pageMutedColor,
+                    border: `1.5px solid ${filterCat === cat ? pc : tpl.headerBorderColor}`,
+                  }}>
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Grid */}
           {filteredProducts.length === 0 ? (
@@ -1787,10 +1831,28 @@ export default function StorePage() {
           </div>
           <div className="flex flex-wrap gap-8 text-xs">
             <div>
-              <p className="font-bold mb-2" style={{ color: tpl.footerColor }}>{tpl.navItems[0]}</p>
-              {tpl.navItems.slice(1, 4).map(l => (
-                <a key={l} href="#productos" className="block mb-1.5 hover:underline" style={{ color: tpl.footerSubColor }}>{l}</a>
+              <p className="font-bold mb-2" style={{ color: tpl.footerColor }}>Categorías</p>
+              {tpl.navItems.map(l => (
+                <button key={l}
+                  onClick={() => {
+                    if (isFood) setActiveCategory(l);
+                    else setFilterCat(l);
+                    document.getElementById("productos")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="block mb-1.5 text-left hover:underline w-full bg-transparent border-none cursor-pointer text-xs transition-opacity hover:opacity-80"
+                  style={{ color: tpl.footerSubColor }}>
+                  {l}
+                </button>
               ))}
+              <button
+                onClick={() => {
+                  if (isFood) setActiveCategory("all"); else setFilterCat("all");
+                  document.getElementById("productos")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className="block mt-1 text-left hover:underline bg-transparent border-none cursor-pointer text-xs font-bold"
+                style={{ color: pc }}>
+                Ver todos →
+              </button>
             </div>
             <div>
               <p className="font-bold mb-2" style={{ color: tpl.footerColor }}>Ayuda</p>
