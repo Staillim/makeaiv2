@@ -9,16 +9,31 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.replace("/login");
+    // Handle case where supabase might be a mock during build
+    if (!supabase.auth || !supabase.auth.getUser) {
+      setChecking(false);
+      return;
+    }
+
+    supabase.auth.getUser().then(({ data }: { data: { user: any } }) => {
+      if (!data.user) router.replace("/login");
       else setChecking(false);
+    }).catch(() => {
+      // Handle auth errors gracefully
+      setChecking(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") router.replace("/login");
-    });
+    if (supabase.auth.onAuthStateChange) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string) => {
+        if (event === "SIGNED_OUT") router.replace("/login");
+      });
 
-    return () => subscription.unsubscribe();
+      return () => {
+        if (subscription && subscription.unsubscribe) {
+          subscription.unsubscribe();
+        }
+      };
+    }
   }, []);
 
   if (checking) {

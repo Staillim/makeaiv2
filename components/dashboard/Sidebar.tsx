@@ -31,7 +31,16 @@ export default function Sidebar({ collapsed }: SidebarProps) {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    // Handle case where supabase might be a mock during build
+    if (!supabase.auth || !supabase.auth.getUser) {
+      return;
+    }
+    
+    supabase.auth.getUser().then(({ data }: { data: { user: any } }) => setUser(data.user))
+      .catch(() => {
+        // Handle auth errors gracefully
+        setUser(null);
+      });
   }, []);
 
   return (
