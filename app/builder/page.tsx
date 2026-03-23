@@ -143,6 +143,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
     price: p.price,
     p: `$${p.price.toLocaleString("es-CO")}`,
     img: previewImages[i % previewImages.length],
+    desc: p.description,
   }));
   const cols = mode === "mobile" ? Math.min(config.columns||3, 2) : Math.min(config.columns||3, 3);
   const pTpl = STORE_TEMPLATES[(type || "general") as keyof typeof STORE_TEMPLATES] ?? STORE_TEMPLATES.general;
@@ -164,6 +165,17 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
     return () => clearInterval(timer);
   }, [rawProds.length]);
   const current = rawProds[slide] ?? rawProds[0];
+
+  // ── Product detail panel state ──────────────────────────
+  const [detailProd, setDetailProd] = useState<typeof rawProds[0] | null>(null);
+  const [detailSize, setDetailSize] = useState("M");
+  const [detailFoodSize, setDetailFoodSize] = useState("Personal");
+  const [detailQty, setDetailQty] = useState(1);
+  const [detailExtras, setDetailExtras] = useState<string[]>([]);
+  const [detailNotes, setDetailNotes] = useState("");
+  useEffect(() => {
+    if (detailProd) { setDetailSize("M"); setDetailFoodSize("Personal"); setDetailQty(1); setDetailExtras([]); setDetailNotes(""); }
+  }, [detailProd?.n]);
 
   const inner = (
     <div style={{ fontFamily:"'Inter',sans-serif", color: pTpl.pageColor, background: pTpl.pageBg, minHeight:"100%" }}>
@@ -263,7 +275,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
             if (isFood) {
               /* ── Food card ── */
               return (
-                <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "none", cursor:"pointer", position:"relative" }}>
+                <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "none", cursor:"pointer", position:"relative" }} onClick={() => setDetailProd(p)}>
                   <div style={{ height:60, overflow:"hidden", position:"relative" }}>
                     <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
                     <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
@@ -278,7 +290,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
                     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:3 }}>
                       <span style={{ fontSize:10, fontWeight:800, color: pTpl.cardPriceColor }}>{p.p}</span>
                     </div>
-                    <button style={{ width:"100%", background: pc, color:"#fff", border:"none", borderRadius:50, padding:"3px 0", fontSize:7, fontWeight:800, cursor:"pointer", boxShadow:`0 3px 10px ${pc}44` }}>+ Agregar</button>
+                    <div style={{ fontSize:6, color: pc, fontWeight:700, textAlign:"center", paddingTop:2 }}>Toca para personalizar →</div>
                   </div>
                 </div>
               );
@@ -287,7 +299,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
             if (isFashion) {
               /* ── Fashion / Beauty card (portrait, no Agregar button) ── */
               return (
-                <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "none", cursor:"pointer", position:"relative" }}>
+                <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "none", cursor:"pointer", position:"relative" }} onClick={() => setDetailProd(p)}>
                   <div style={{ height:80, overflow:"hidden", position:"relative" }}>
                     <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
                     <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 50%)" }} />
@@ -310,9 +322,9 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
               );
             }
 
-            /* ── Tech / General card (no Agregar button, click opens detail) ── */
+            /* ── Tech / General card (click opens detail) ── */
             return (
-              <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "1px solid rgba(0,0,0,0.06)", cursor:"pointer", position:"relative", transition:"all 0.3s" }}>
+              <div key={i} style={{ borderRadius: pTpl.cardRadius, overflow:"hidden", background: pTpl.cardBg, border: pTpl.cardBorder || "1px solid rgba(0,0,0,0.06)", cursor:"pointer", position:"relative", transition:"all 0.3s" }} onClick={() => setDetailProd(p)}>
                 <div style={{ height:64, overflow:"hidden", position:"relative", background: pTpl.cardBg }}>
                   {i === 0 && <div style={{ position:"absolute", top:3, left:3, zIndex:2, background: pc, color:"#fff", borderRadius:3, padding:"1px 5px", fontSize:6, fontWeight:700 }}>Nuevo</div>}
                   <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"contain", display:"block", padding:6, background: pTpl.cardBg }} />
@@ -343,6 +355,130 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
     </div>
   );
 
+  // ── Product detail bottom-sheet panel ─────────────────────────────────────
+  const panel = detailProd ? (
+    <div style={{ position:"absolute", inset:0, zIndex:50, display:"flex", flexDirection:"column", justifyContent:"flex-end", background:"rgba(0,0,0,0.52)" }}
+      onClick={() => setDetailProd(null)}>
+      <div style={{ background: pTpl.cardBg, color: pTpl.cardColor, borderRadius:"12px 12px 0 0", maxHeight:"76%", overflowY:"auto" }}
+        onClick={e => e.stopPropagation()}>
+        {/* Handle bar */}
+        <div style={{ display:"flex", justifyContent:"center", padding:"8px 0 0" }}>
+          <div style={{ width:32, height:3, borderRadius:50, background:"rgba(128,128,128,0.3)" }} />
+        </div>
+        <div style={{ padding:"10px 12px 16px" }}>
+          {/* Header: thumb + name + price */}
+          <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+            <div style={{ width:64, height:64, borderRadius:8, overflow:"hidden", flexShrink:0 }}>
+              <img src={detailProd.img} alt={detailProd.n}
+                style={{ width:"100%", height:"100%", objectFit: isFood ? "cover" : "contain", padding: isFood ? 0 : 4, background: pTpl.cardBg }} />
+            </div>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontSize:10, fontWeight:800, lineHeight:1.3, marginBottom:2, color: pTpl.cardColor }}>{detailProd.n}</div>
+              <div style={{ fontSize:14, fontWeight:900, color: pTpl.cardPriceColor }}>{detailProd.p}</div>
+              <div style={{ fontSize:7, color:"#f5a623", marginTop:2 }}>★★★★★ <span style={{ color: pTpl.pageMutedColor, fontWeight:400 }}>128 reseñas</span></div>
+            </div>
+            <button onClick={() => setDetailProd(null)}
+              style={{ width:20, height:20, borderRadius:"50%", border:"none", background:"rgba(128,128,128,0.15)", cursor:"pointer", fontSize:11, color: pTpl.cardColor, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:2 }}>✕</button>
+          </div>
+          <div style={{ borderTop:`1px solid ${pTpl.headerBorderColor}`, marginBottom:10 }} />
+
+          {/* ── FOOD options ── */}
+          {isFood && (
+            <>
+              <div style={{ marginBottom:8 }}>
+                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:4 }}>Tamaño</div>
+                <div style={{ display:"flex", gap:4 }}>
+                  {["Personal","Mediano","Grande"].map(s => (
+                    <button key={s} onClick={() => setDetailFoodSize(s)}
+                      style={{ flex:1, padding:"4px 2px", borderRadius:6, fontSize:7, fontWeight:700, cursor:"pointer",
+                        border: detailFoodSize===s ? `2px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}`,
+                        background: detailFoodSize===s ? `${pc}20` : "transparent",
+                        color: detailFoodSize===s ? pc : pTpl.cardColor }}>{s}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom:8 }}>
+                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:4 }}>Adicciones</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:3 }}>
+                  {["🧀 Queso +$2k","🥓 Tocineta +$3k","🥑 Aguacate +$2.5k","🍳 Huevo frito +$1.5k","🌶️ Sin picante FREE"].map(e => {
+                    const active = detailExtras.includes(e);
+                    return (
+                      <button key={e} onClick={() => setDetailExtras(prev => active ? prev.filter(x=>x!==e) : [...prev,e])}
+                        style={{ padding:"2px 5px", borderRadius:50, fontSize:6, fontWeight:700, cursor:"pointer",
+                          background: active ? pc : "transparent",
+                          color: active ? "#fff" : pTpl.cardColor,
+                          border: active ? `1px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}` }}>{e}</button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div style={{ marginBottom:10 }}>
+                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:3 }}>Preferencias / Notas</div>
+                <textarea value={detailNotes} onChange={e => setDetailNotes(e.target.value)}
+                  placeholder="Sin cebolla, extra salsa... (opcional)" rows={2}
+                  style={{ width:"100%", fontSize:7, padding:"4px 6px", borderRadius:6, border:`1px solid ${pTpl.headerBorderColor}`, background:"transparent", color: pTpl.cardColor, resize:"none", outline:"none", boxSizing:"border-box", fontFamily:"inherit" }} />
+              </div>
+            </>
+          )}
+
+          {/* ── ROPA / BEAUTY options ── */}
+          {isFashion && (
+            <>
+              <div style={{ marginBottom:8 }}>
+                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:4 }}>Talla: <span style={{ color: pc }}>{detailSize}</span></div>
+                <div style={{ display:"flex", gap:3 }}>
+                  {["XS","S","M","L","XL","XXL"].map(s => (
+                    <button key={s} onClick={() => setDetailSize(s)}
+                      style={{ minWidth:22, height:22, borderRadius:5, fontSize:6, fontWeight:700, cursor:"pointer",
+                        border: detailSize===s ? `2px solid ${pc}` : `1px solid ${pTpl.headerBorderColor}`,
+                        background: detailSize===s ? `${pc}20` : "transparent",
+                        color: detailSize===s ? pc : pTpl.cardColor }}>{s}</button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom:10 }}>
+                <div style={{ fontSize:6, fontWeight:700, color: pTpl.pageMutedColor, textTransform:"uppercase", letterSpacing:.8, marginBottom:4 }}>Color</div>
+                <div style={{ display:"flex", gap:4 }}>
+                  {[{n:"Negro",h:"#1a1a1a"},{n:"Blanco",h:"#e5e5e5"},{n:"Rojo",h:"#e63946"},{n:"Azul",h:"#457b9d"},{n:"Verde",h:"#2a9d5c"}].map(c => (
+                    <button key={c.n} title={c.n}
+                      style={{ width:16, height:16, borderRadius:"50%", background:c.h, border:"1.5px solid rgba(0,0,0,0.15)", cursor:"pointer" }} />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* ── TECH / GENERAL description ── */}
+          {!isFood && !isFashion && (
+            <div style={{ marginBottom:10 }}>
+              <div style={{ fontSize:7, lineHeight:1.5, color: pTpl.pageMutedColor, marginBottom:5 }}>{detailProd.desc}</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:3 }}>
+                {["✅ Garantía 1 año","🚚 Envío gratis","📦 Dev. 30 días"].map(b => (
+                  <span key={b} style={{ fontSize:6, padding:"2px 5px", borderRadius:50, background:`${pc}15`, color: pc, fontWeight:700 }}>{b}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Qty + CTA */}
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginTop:6 }}>
+            <div style={{ display:"flex", alignItems:"center", border:`1.5px solid ${pTpl.headerBorderColor}`, borderRadius:8, overflow:"hidden" }}>
+              <button onClick={() => setDetailQty(q => Math.max(1,q-1))}
+                style={{ width:26, height:26, background:"transparent", border:"none", cursor:"pointer", fontSize:15, lineHeight:1, color: pTpl.cardColor }}>−</button>
+              <span style={{ width:22, textAlign:"center", fontSize:9, fontWeight:800, color: pTpl.cardColor }}>{detailQty}</span>
+              <button onClick={() => setDetailQty(q => q+1)}
+                style={{ width:26, height:26, background:"transparent", border:"none", cursor:"pointer", fontSize:15, lineHeight:1, color: pTpl.cardColor }}>+</button>
+            </div>
+            <button onClick={() => setDetailProd(null)}
+              style={{ flex:1, padding:"7px 0", borderRadius:8, border:"none", background: pc, color:"#fff", fontSize:8, fontWeight:800, cursor:"pointer", boxShadow:`0 3px 12px ${pc}44` }}>
+              {isFood ? `🛵 Pedir · ${detailProd.p}` : `🛍 Agregar · ${detailProd.p}`}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   if (mode === "mobile") {
     return (
       <div className="flex-1 flex items-center justify-center p-6" style={{ background:"#050508" }}>
@@ -353,6 +489,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
               <div className="w-12 h-1 rounded-full" style={{ background:"rgba(255,255,255,0.2)" }}/>
             </div>
             <div className="absolute inset-0 overflow-y-auto mt-6 bg-white rounded-b-[38px]">{inner}</div>
+            {panel}
           </div>
         </div>
       </div>
@@ -360,7 +497,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
   }
 
   return (
-    <div className="flex-1 m-5 overflow-hidden rounded-2xl border" style={{ borderColor:"rgba(255,255,255,0.08)", background:"#fff", boxShadow:"0 32px 80px rgba(0,0,0,0.5)" }}>
+    <div className="flex-1 m-5 overflow-hidden rounded-2xl border relative" style={{ borderColor:"rgba(255,255,255,0.08)", background:"#fff", boxShadow:"0 32px 80px rgba(0,0,0,0.5)" }}>
       {/* Browser bar */}
       <div className="flex items-center gap-2 px-3 py-2.5" style={{ background:"#f0f0f5", borderBottom:"1px solid #e0e0e8" }}>
         <div className="flex gap-1.5">
@@ -371,6 +508,7 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
         </div>
       </div>
       <div className="overflow-y-auto" style={{ height:"calc(100% - 40px)" }}>{inner}</div>
+      {panel}
     </div>
   );
 }

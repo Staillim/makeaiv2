@@ -863,9 +863,9 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
 
         <button
           onClick={e => { e.stopPropagation(); onOpen(p); }}
-          className="mt-1.5 w-full py-2 rounded-xl text-xs font-black text-white transition-all hover:opacity-90 active:scale-95"
-          style={{ background: pc, boxShadow: `0 4px 14px ${pc}55` }}>
-          + Agregar
+          className="mt-1.5 w-full py-2 rounded-xl text-xs font-black transition-all hover:opacity-90 active:scale-95 flex items-center justify-center gap-1"
+          style={{ background: `${pc}18`, color: pc, border: `1px solid ${pc}40` }}>
+          Ver opciones →
         </button>
       </div>
     </div>
