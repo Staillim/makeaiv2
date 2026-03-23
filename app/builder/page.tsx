@@ -186,9 +186,9 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
           {rawProds.slice(0,cols*2).map((p,i)=>(
             <div key={i} style={{ borderRadius:10, overflow:"hidden", background:"#fff", border:"1px solid #e8e8e8", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
               {/* Image area */}
-              <div style={{ height:64, overflow:"hidden", position:"relative" }}>
+              <div style={{ height:64, overflow:"hidden", position:"relative", background:"#f8f8f8" }}>
                 {i === 0 && <div style={{ position:"absolute", top:3, left:3, zIndex:2, background: pc, color:"#fff", borderRadius:3, padding:"1px 5px", fontSize:7, fontWeight:700 }}>Nuevo</div>}
-                <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit:"contain", display:"block", padding:4 }} />
               </div>
               <div style={{ padding:"6px 7px" }}>
                 <div style={{ fontSize:9, fontWeight:600, color:"#1a1a2e", marginBottom:3, lineHeight:1.3 }}>{p.n}</div>
