@@ -8,6 +8,39 @@
   --font-jakarta: 'Plus Jakarta Sans', sans-serif;
 }
 
+/* ── Store card animations ─────────────────────────────── */
+@keyframes shimmerSlide {
+  0%   { transform: translateX(-150%) skewX(-12deg); }
+  100% { transform: translateX(250%)  skewX(-12deg); }
+}
+@keyframes floatOrb {
+  0%, 100% { transform: translate(0, 0) scale(1);    opacity: .25; }
+  50%       { transform: translate(6px, -10px) scale(1.15); opacity: .45; }
+}
+@keyframes particlePop {
+  0%   { opacity: 0; transform: translateY(0) scale(0); }
+  60%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-22px) scale(1.4); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50%       { box-shadow: 0 0 0 6px rgba(255,255,255,0.08); }
+}
+
+.card-shimmer-stripe {
+  position: absolute; top: 0; left: 0;
+  width: 45%; height: 100%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.16) 50%, transparent 100%);
+  animation: shimmerSlide 1.3s ease-in-out infinite;
+  pointer-events: none; z-index: 10;
+}
+.card-orb {
+  position: absolute; border-radius: 9999px; pointer-events: none;
+  animation: floatOrb 3s ease-in-out infinite;
+}
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 @layer base {
   * { box-sizing: border-box; margin: 0; padding: 0; }
 

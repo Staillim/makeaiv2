@@ -718,6 +718,55 @@ function FoodCartDrawer({ items, pc, tpl, deliveryMode, setDeliveryMode, subtota
   );
 }
 
+// ─── FEATURED CAROUSEL ────────────────────────────────────────────────────────
+
+function FeaturedCarousel({ products, pc, tpl, storeType, onOpen }: {
+  products: Product[]; pc: string; tpl: StoreTemplate; storeType: string;
+  onOpen: (p: Product) => void;
+}) {
+  const featured = products.filter(p => p.image).slice(0, 10);
+  if (featured.length < 3) return null;
+  const isFashion = storeType === "ropa" || storeType === "beauty";
+  return (
+    <section className="px-3 md:px-4 py-4" style={{ borderBottom: `1px solid ${tpl.headerBorderColor}` }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-black tracking-tight" style={{ color: tpl.pageColor }}>
+            ⭐ Destacados
+          </h2>
+          <a href="#productos" className="text-xs font-semibold flex items-center gap-0.5" style={{ color: pc }}>
+            Ver todos <ChevronRight size={12} />
+          </a>
+        </div>
+        <div className="flex gap-2.5 overflow-x-auto pb-1 hide-scrollbar">
+          {featured.map(p => {
+            const m = productMeta(p);
+            return (
+              <div key={p.id} className="flex-shrink-0 cursor-pointer group" style={{ width: isFashion ? 110 : 100 }}
+                onClick={() => onOpen(p)}>
+                <div className="relative rounded-2xl overflow-hidden" style={{ height: isFashion ? 145 : 120 }}>
+                  <img src={p.image!} alt={p.name} className="w-full h-full transition-transform duration-400 group-hover:scale-110"
+                    style={{ objectFit: isFashion ? "cover" : "contain", padding: isFashion ? 0 : 8, background: tpl.cardBg }} />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
+                  {m.isFlash && (
+                    <span className="absolute top-1.5 left-1.5 px-1 py-0.5 rounded text-[9px] font-black text-white" style={{ background: "#e63946" }}>
+                      -{m.discountPct}%
+                    </span>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 px-2 pb-2">
+                    <p className="text-[10px] font-bold text-white line-clamp-1 leading-tight">{p.name}</p>
+                    <p className="text-[11px] font-black" style={{ color: "#f5c842" }}>{formatCOP(p.price)}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── FOOD PRODUCT CARD ────────────────────────────────────────────────────────
 
 function FoodProductCard({ p, pc, onOpen, tpl }: {
@@ -731,30 +780,45 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
 
   return (
     <div
-      className="overflow-hidden cursor-pointer flex flex-col transition-all duration-200 min-w-0"
+      className="overflow-hidden cursor-pointer flex flex-col min-w-0 relative"
       style={{
         background: tpl.cardBg,
         border: tpl.cardBorder,
         borderRadius: tpl.cardRadius,
-        boxShadow: hovered ? "0 8px 28px rgba(0,0,0,0.35)" : "0 2px 8px rgba(0,0,0,0.2)",
-        transform: hovered ? "translateY(-4px) scale(1.01)" : "none",
+        boxShadow: hovered ? "0 20px 48px rgba(0,0,0,0.38)" : "0 2px 8px rgba(0,0,0,0.2)",
+        transform: hovered ? "translateY(-5px) scale(1.015)" : "none",
+        transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onOpen(p)}
     >
+      {/* Shimmer on hover */}
+      {hovered && <div className="card-shimmer-stripe" />}
+
+      {/* Ambient orb */}
+      <div className="card-orb" style={{
+        width: 70, height: 70, top: -20, right: -20,
+        background: `radial-gradient(circle, ${pc}55 0%, transparent 70%)`,
+        opacity: hovered ? 1 : 0, transition: "opacity 0.4s",
+      }} />
+
       {/* Image */}
       <div className="relative overflow-hidden" style={{ height: 150 }}>
         {p.image
-          ? <img src={p.image} alt={p.name} className="w-full h-full object-cover transition-transform duration-300"
-              style={{ transform: hovered ? "scale(1.08)" : "scale(1)" }} />
+          ? <img src={p.image} alt={p.name} className="w-full h-full object-cover transition-transform duration-500"
+              style={{ transform: hovered ? "scale(1.09)" : "scale(1)" }} />
           : <div className="w-full h-full flex items-center justify-center" style={{ background: "#1a1a1a" }}>
               <Utensils size={60} color="#333" />
             </div>
         }
-        <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 55%)" }} />
+        <div className="absolute inset-0 transition-all duration-300" style={{
+          background: hovered
+            ? "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.1) 60%, transparent 100%)"
+            : "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)",
+        }} />
 
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-[2]">
           {meta.isFlash && (
             <span className="px-1.5 py-0.5 rounded-lg text-[10px] font-black text-white flex items-center gap-0.5"
               style={{ background: "#e63946" }}><Flame size={8} />-{meta.discountPct}%</span>
@@ -766,19 +830,20 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
         </div>
 
         {/* Prep time badge */}
-        <div className="absolute bottom-2 right-2">
+        <div className="absolute bottom-2 right-2 z-[2]">
           <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
-            style={{ background: "rgba(0,0,0,0.65)" }}>
+            style={{ background: "rgba(0,0,0,0.70)" }}>
             <Clock size={9} /> {prepMin}-{prepMin + 5} min
           </span>
         </div>
 
         {p.stock <= 5 && p.stock > 0 && (
-          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold"
+          <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-bold z-[2]"
             style={{ background: "#f5c842", color: "#111" }}>¡Solo {p.stock}!</span>
         )}
 
-        <div className="absolute bottom-2 left-0 right-0 flex justify-center transition-all duration-200"
+        {/* Hover CTA */}
+        <div className="absolute bottom-2 left-0 right-0 flex justify-center z-[2] transition-all duration-300"
           style={{ opacity: hovered ? 1 : 0, transform: hovered ? "translateY(0)" : "translateY(8px)" }}>
           <span className="px-4 py-1.5 rounded-full text-xs font-black text-white"
             style={{ background: pc }}>Ver y personalizar →</span>
@@ -786,7 +851,7 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
       </div>
 
       {/* Info */}
-      <div className="p-3 flex flex-col flex-1">
+      <div className="p-3 flex flex-col flex-1 relative z-[2]">
         <p className="text-xs font-bold leading-snug mb-1 line-clamp-2" style={{ color: tpl.cardColor }}>{p.name}</p>
 
         <div className="flex items-baseline gap-1.5 mt-auto">
@@ -798,8 +863,8 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
 
         <button
           onClick={e => { e.stopPropagation(); onOpen(p); }}
-          className="mt-1.5 w-full py-2 rounded-xl text-xs font-black text-white transition-opacity hover:opacity-90"
-          style={{ background: pc }}>
+          className="mt-1.5 w-full py-2 rounded-xl text-xs font-black text-white transition-all hover:opacity-90 active:scale-95"
+          style={{ background: pc, boxShadow: `0 4px 14px ${pc}55` }}>
           + Agregar
         </button>
       </div>
@@ -809,94 +874,148 @@ function FoodProductCard({ p, pc, onOpen, tpl }: {
 
 // ─── PRODUCT CARD ──────────────────────────────────────────────────────────────
 
-function ProductCard({ p, pc, onOpen, tpl }: {
-  p: Product; pc: string;
+function ProductCard({ p, pc, storeType, onOpen, tpl }: {
+  p: Product; pc: string; storeType: string;
   onOpen: (p: Product) => void; tpl: StoreTemplate;
 }) {
   const [hovered, setHovered] = useState(false);
   const [liked, setLiked] = useState(false);
   const meta = productMeta(p);
+  const isFashion = storeType === "ropa" || storeType === "beauty";
+  const isTech    = storeType === "tech";
 
   return (
     <div
-      className="overflow-hidden cursor-pointer flex flex-col transition-all duration-200 min-w-0"
+      className="overflow-hidden cursor-pointer flex flex-col min-w-0 relative"
       style={{
         background: tpl.cardBg,
         border: tpl.cardBorder,
         borderRadius: tpl.cardRadius,
-        boxShadow: hovered ? "0 8px 28px rgba(0,0,0,0.13)" : "0 1px 4px rgba(0,0,0,0.06)",
-        transform: hovered ? "translateY(-3px)" : "none",
+        boxShadow: hovered ? "0 20px 48px rgba(0,0,0,0.22)" : "0 1px 6px rgba(0,0,0,0.07)",
+        transform: hovered ? "translateY(-5px) scale(1.015)" : "none",
+        transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onOpen(p)}
     >
-      <div className="relative overflow-hidden" style={{ height: 160, background: tpl.cardBg }}>
+      {/* Shimmer on hover */}
+      {hovered && <div className="card-shimmer-stripe" />}
+
+      {/* Ambient orb */}
+      <div className="card-orb" style={{
+        width: 70, height: 70, top: -20, right: -20,
+        background: `radial-gradient(circle, ${pc}44 0%, transparent 70%)`,
+        opacity: hovered ? 1 : 0, transition: "opacity 0.4s",
+      }} />
+
+      {/* ── Image ── */}
+      <div className="relative overflow-hidden flex-shrink-0"
+        style={{
+          height: isFashion ? 210 : 155,
+          background: isFashion ? (tpl.pageBg === "#111111" ? "#1a1a1a" : "#f8f8f8") : tpl.cardBg,
+        }}>
         {p.image ? (
-          <img src={p.image} alt={p.name} className="w-full h-full"
-            style={{ objectFit: "contain", padding: 12, background: tpl.cardBg }} />
+          <img src={p.image} alt={p.name} className="w-full h-full transition-transform duration-500"
+            style={{
+              objectFit: isFashion ? "cover" : "contain",
+              padding: isFashion ? 0 : 10,
+              transform: hovered ? "scale(1.07)" : "scale(1)",
+            }} />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Package size={72} color="#e0e0e0" />
+            {isFashion ? <ShoppingBag size={64} color={`${pc}60`} /> : isTech ? <Cpu size={64} color={`${pc}60`} /> : <Package size={64} color="#e0e0e0" />}
           </div>
         )}
 
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
+        {/* Fashion gradient overlay */}
+        {isFashion && (
+          <div className="absolute inset-0 transition-all duration-400"
+            style={{ background: hovered
+              ? "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.2) 55%, transparent 100%)"
+              : "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)" }} />
+        )}
+
+        {/* Badges */}
+        <div className="absolute top-2 left-2 flex flex-col gap-1 z-[2]">
           {meta.isFlash && (
             <span className="px-1.5 py-0.5 rounded text-[10px] font-black text-white flex items-center gap-0.5"
-              style={{ background: "#e63946" }}><Flame size={9}/>-{meta.discountPct}%</span>
+              style={{ background: "#e63946" }}><Flame size={9} />-{meta.discountPct}%</span>
           )}
           {!meta.isFlash && meta.isNew && (
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
-              style={{ background: pc }}>NUEVO</span>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style={{ background: pc }}>NUEVO</span>
           )}
           {meta.isBestSeller && !meta.isFlash && (
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
-              style={{ background: "#f59e0b" }}>TOP</span>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white" style={{ background: "#f59e0b" }}>TOP</span>
           )}
         </div>
 
-        <button
-          className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all"
-          style={{ background: "rgba(255,255,255,0.9)", boxShadow: "0 1px 4px rgba(0,0,0,0.1)" }}
+        {/* Heart */}
+        <button className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center z-[2] transition-transform"
+          style={{ background: "rgba(255,255,255,0.92)", boxShadow: "0 1px 4px rgba(0,0,0,0.12)", transform: liked ? "scale(1.25)" : "scale(1)" }}
           onClick={e => { e.stopPropagation(); setLiked(l => !l); }}>
           <Heart size={13} fill={liked ? "#e63946" : "none"} color={liked ? "#e63946" : "#aaa"} />
         </button>
 
+        {/* Stock */}
         {p.stock <= 5 && p.stock > 0 && (
-          <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold"
-            style={{ background: "#fff3cd", color: "#856404", border: "1px solid #ffc107" }}>
-            ¡Solo {p.stock}!
-          </span>
+          <span className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-bold z-[2]"
+            style={{ background: "#fff3cd", color: "#856404" }}>¡Solo {p.stock}!</span>
         )}
 
-        <div className="absolute bottom-0 left-0 right-0 py-2.5 text-sm font-bold text-white text-center transition-all duration-200"
-          style={{
-            background: pc, opacity: hovered ? 1 : 0,
-            transform: hovered ? "translateY(0)" : "translateY(100%)",
-          }}>
-          Ver tallas y colores →
+        {/* Slide-up CTA bar */}
+        <div className="absolute inset-x-0 bottom-0 py-2.5 text-xs font-bold text-white text-center z-[2] transition-all duration-300"
+          style={{ background: pc, opacity: hovered ? 1 : 0, transform: hovered ? "translateY(0)" : "translateY(100%)" }}>
+          {isFashion ? "Ver tallas y colores →" : isTech ? "Ver especificaciones →" : "Ver detalles →"}
         </div>
+
+        {/* Fashion: name overlay on image */}
+        {isFashion && (
+          <div className="absolute z-[2] px-2.5 pb-9 left-0 right-0 bottom-0 transition-all duration-300"
+            style={{ opacity: hovered ? 1 : 0.85 }}>
+            <p className="text-[11px] font-bold text-white leading-tight line-clamp-1">{p.name}</p>
+            <div className="flex items-baseline gap-1.5 mt-0.5">
+              <span className="text-sm font-black text-white">{formatCOP(p.price)}</span>
+              {meta.originalPrice && <span className="text-[10px] line-through text-white/60">{formatCOP(meta.originalPrice)}</span>}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="p-2.5 flex flex-col flex-1">
-        <p className="text-xs font-semibold leading-snug mb-1 line-clamp-2" style={{ color: tpl.cardColor }}>{p.name}</p>
-        <StarRating value={meta.ratingVal} count={meta.reviewCount} />
-
-        <div className="mt-auto pt-1">
-          <div className="flex items-baseline gap-1 flex-wrap">
-            <span className="text-base font-black" style={{ color: tpl.cardPriceColor }}>{formatCOP(p.price)}</span>
-            {meta.originalPrice && (
-              <span className="text-[10px] line-through" style={{ color: "#bbb" }}>{formatCOP(meta.originalPrice)}</span>
+      {/* ── Info body (non-fashion) ── */}
+      {!isFashion && (
+        <div className="p-2.5 flex flex-col flex-1 relative z-[2]">
+          <p className="text-xs font-semibold leading-snug mb-1 line-clamp-2" style={{ color: tpl.cardColor }}>{p.name}</p>
+          <StarRating value={meta.ratingVal} />
+          {isTech && p.description && (
+            <p className="text-[10px] mt-1 line-clamp-1 opacity-70" style={{ color: tpl.cardColor }}>{p.description}</p>
+          )}
+          <div className="mt-auto pt-1.5 flex items-baseline justify-between flex-wrap gap-1">
+            <div>
+              <span className="text-sm font-black" style={{ color: tpl.cardPriceColor }}>{formatCOP(p.price)}</span>
+              {meta.originalPrice && <span className="text-[10px] line-through ml-1" style={{ color: "#bbb" }}>{formatCOP(meta.originalPrice)}</span>}
+            </div>
+            {meta.hasFreeShipping && (
+              <span className="text-[10px] font-semibold flex items-center gap-0.5" style={{ color: "#2a9d5c" }}>
+                <Truck size={8} color="#2a9d5c" /> Gratis
+              </span>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ── Fashion minimal footer ── */}
+      {isFashion && (
+        <div className="px-2.5 py-1.5 flex items-center justify-between relative z-[2]"
+          style={{ borderTop: `1px solid ${tpl.headerBorderColor}` }}>
+          <StarRating value={meta.ratingVal} />
           {meta.hasFreeShipping && (
-            <p className="flex items-center gap-1 text-[10px] font-semibold mt-0.5" style={{ color: "#2a9d5c" }}>
-              <Truck size={9} color="#2a9d5c"/> Envío gratis
-            </p>
+            <span className="text-[10px] font-semibold flex items-center gap-0.5" style={{ color: "#2a9d5c" }}>
+              <Truck size={8} color="#2a9d5c" /> Gratis
+            </span>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -1194,11 +1313,9 @@ export default function StorePage() {
             </div>
           </div>
           {/* Trust badges — desktop only */}
-          <div className="hidden md:grid flex-shrink-0 grid-cols-2 gap-2.5">
+          <div className="hidden md:flex flex-shrink-0 gap-2.5">
             {[
               { icon: isFood ? <Bike size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} /> : <Truck size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} />, ti: tpl.trustItems[0] },
-              { icon: isFood ? <CheckCircle size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} /> : <Lock size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} />, ti: tpl.trustItems[1] },
-              { icon: isFood ? <Flame size={20} color="#f5c842" /> : <RotateCcw size={20} color={tpl.heroIsDark ? "#fff" : tpl.heroColor} />, ti: tpl.trustItems[2] },
               { icon: <Star size={20} color="#f5c842" />, ti: tpl.trustItems[3] },
             ].map((b, idx) => (
               <div key={idx} className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
@@ -1217,6 +1334,11 @@ export default function StorePage() {
           </div>
         </div>
       </section>
+
+      {/* ── Featured product carousel ───────────────────────── */}
+      {!isFood && (
+        <FeaturedCarousel products={allProducts} pc={pc} tpl={tpl} storeType={store.type} onOpen={setSelectedProduct} />
+      )}
 
       {/* ── Food: delivery mode + categories ───────────────── */}
       {isFood && (
@@ -1474,11 +1596,11 @@ export default function StorePage() {
               </button>
             </div>
           ) : (
-            <div className={`grid gap-4 grid-cols-2 ${store.columns >= 4 ? "lg:grid-cols-4" : store.columns === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+            <div className={`grid gap-2 md:gap-4 grid-cols-2 ${store.columns >= 4 ? "lg:grid-cols-4" : store.columns === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
               {filteredProducts.map(p => (
                 isFood
                   ? <FoodProductCard key={p.id} p={p} pc={pc} onOpen={setSelectedProduct} tpl={tpl} />
-                  : <ProductCard     key={p.id} p={p} pc={pc} onOpen={setSelectedProduct} tpl={tpl} />
+                  : <ProductCard     key={p.id} p={p} pc={pc} storeType={store.type} onOpen={setSelectedProduct} tpl={tpl} />
               ))}
             </div>
           )}
