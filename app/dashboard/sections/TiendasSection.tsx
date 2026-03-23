@@ -82,7 +82,7 @@ export default function TiendasSection() {
                   ))}
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  <Link href={`/store/${store.slug}`} className="btn-sm">Ver tienda →</Link>
+                  <a href={`/store/${store.slug}`} target="_blank" rel="noopener noreferrer" className="btn-sm">Ver tienda →</a>
                   <button onClick={()=>copyStoreLink(store.slug, store.id)} className="btn-sm">{copiedId === store.id ? "✓ Copiado" : "📋 Compartir enlace"}</button>
                   <button onClick={()=>router.push("/dashboard/analytics")} className="btn-sm">Analytics</button>
                   <button onClick={()=>router.push("/dashboard/productos")} className="btn-sm">Productos</button>

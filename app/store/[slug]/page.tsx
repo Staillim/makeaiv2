@@ -123,7 +123,7 @@ function ProductCard({ p, pc, onAdd, storeType }: { p: Product; pc: string; onAd
         )}
         <div className="mt-auto">
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="text-xl font-black" style={{ color: "#1a1a2e", fontFamily: "var(--font-syne)" }}>
+            <span className="text-xl font-black" style={{ color: "#1a1a2e", fontFamily: "var(--font-jakarta)" }}>
               {formatCOP(p.price)}
             </span>
             {originalPrice && (
@@ -247,7 +247,7 @@ export default function StorePage() {
       <header className="sticky top-0 z-50 bg-white" style={{ borderBottom: "1px solid #e4e4e4", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
         <div className="max-w-7xl mx-auto flex items-center gap-4 px-6 py-3">
           {/* Logo */}
-          <div className="font-black text-xl flex-shrink-0" style={{ fontFamily: "var(--font-syne)", color: "#1a1a2e" }}>
+          <div className="font-black text-xl flex-shrink-0" style={{ fontFamily: "var(--font-jakarta)", color: "#1a1a2e" }}>
             <span style={{ color: pc }}>{storeName[0]}</span>{storeName.slice(1)}
           </div>
 
@@ -264,7 +264,7 @@ export default function StorePage() {
             </button>
           </div>
 
-          {/* Cart + Panel */}
+          {/* Cart */}
           <div className="flex items-center gap-2 ml-auto">
             <button
               className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white transition-opacity hover:opacity-90"
@@ -276,11 +276,6 @@ export default function StorePage() {
                 {cart.length}
               </span>
             </button>
-            <Link href="/dashboard"
-              className="text-xs px-3 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100"
-              style={{ color: "#666", border: "1px solid #e0e0e0" }}>
-              ← Panel
-            </Link>
           </div>
         </div>
 
@@ -308,7 +303,7 @@ export default function StorePage() {
               {CATEGORY_ICONS[store.type] || "📦"} {store.type?.charAt(0).toUpperCase() + store.type?.slice(1)} · Colección {new Date().getFullYear()}
             </div>
             <h1 className="text-3xl md:text-5xl font-black leading-tight tracking-tight mb-3"
-              style={{ fontFamily: "var(--font-syne)", color: "#111" }}>
+              style={{ fontFamily: "var(--font-jakarta)", color: "#111" }}>
               {store.tagline || storeName}
             </h1>
             <p className="text-sm mb-6 max-w-md" style={{ color: "#777" }}>
@@ -354,7 +349,7 @@ export default function StorePage() {
           {/* Toolbar */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
-              <h2 className="text-2xl font-black" style={{ fontFamily: "var(--font-syne)" }}>
+              <h2 className="text-2xl font-black" style={{ fontFamily: "var(--font-jakarta)" }}>
                 Productos destacados
               </h2>
               <p className="text-sm mt-0.5" style={{ color: "#999" }}>
@@ -392,7 +387,7 @@ export default function StorePage() {
       <footer className="mt-10 py-10 px-6 bg-white" style={{ borderTop: "1px solid #e4e4e4" }}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start justify-between gap-8">
           <div>
-            <div className="font-black text-lg mb-2" style={{ fontFamily: "var(--font-syne)", color: "#111" }}>
+            <div className="font-black text-lg mb-2" style={{ fontFamily: "var(--font-jakarta)", color: "#111" }}>
               <span style={{ color: pc }}>{storeName[0]}</span>{storeName.slice(1)}
             </div>
             <p className="text-xs max-w-xs" style={{ color: "#aaa" }}>
