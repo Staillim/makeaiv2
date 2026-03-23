@@ -160,54 +160,56 @@ function LivePreview({ config, mode }: { config: BuilderConfig; mode: "desktop"|
         <div style={{ background: pc, color:"#fff", borderRadius: pTpl.btnRadius, padding:"3px 9px", fontSize:9, fontWeight:700 }}>Carrito 0</div>
       </div>
 
-      {/* ── Hero ── */}
-      <div style={{ background: pTpl.heroBg, padding: mode === "mobile" ? "14px 10px 12px" : "20px 14px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:10 }}>
-        <div style={{ flex:1 }}>
-          <div style={{ fontSize:7, fontWeight:700, color: pTpl.heroColor, marginBottom:3, textTransform:"uppercase", letterSpacing:.6, opacity:.7 }}>
-            {isFood ? "🔥 Pide ahora" : pTpl.navItems[1]+" · Nueva"}
+      {/* ── Hero with Product Carousel ── */}
+      <div style={{ background: pTpl.heroBg, padding: mode === "mobile" ? "14px 10px 10px" : "16px 14px 10px", position:"relative", overflow:"hidden" }}>
+        {/* Top bar: store subtitle + trust badges */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
+          <div>
+            <div style={{ fontSize:7, fontWeight:700, color: pTpl.heroColor, textTransform:"uppercase", letterSpacing:.6, opacity:.7, marginBottom:2 }}>
+              {isFood ? "🔥 Pide ahora" : pTpl.navItems[1]+" · Nueva"}
+            </div>
+            <h1 style={{ fontWeight:900, fontSize: mode === "mobile" ? 12 : 15, color: pTpl.heroColor, letterSpacing:-.3, lineHeight:1.15, margin:0 }}>{tag || name}</h1>
           </div>
-          <h1 style={{ fontWeight:900, fontSize: mode === "mobile" ? 11 : 14, color: pTpl.heroColor, letterSpacing:-.3, lineHeight:1.2, marginBottom:3 }}>{tag || name}</h1>
-          <p style={{ fontSize:7, color: pTpl.heroSubColor, marginBottom:6 }}>
-            {isFood ? `${rawProds.length} platos · Delivery en 20 min` : `${rawProds.length} productos · Envío a todo el país`}
-          </p>
-          <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.heroBtnRadius, padding:"4px 10px", fontSize:8, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 12px ${pc}44` }}>
-            {isFood ? "🛵 Pedir ahora →" : "Ver colección →"}
-          </button>
+          {mode !== "mobile" && (
+            <div style={{ display:"flex", gap:3, flexShrink:0 }}>
+              {pTpl.trustItems.slice(0,2).map((b,i)=>(
+                <div key={i} style={{ background: pTpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border:`1px solid ${pTpl.heroIsDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`, borderRadius:8, padding:"3px 7px", fontSize:6, color: pTpl.heroColor, fontWeight:600 }}>
+                  {b.label}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        {/* Trust strip — only desktop */}
-        {mode !== "mobile" && (
-          <div style={{ display:"flex", flexDirection:"column", gap:3, flexShrink:0 }}>
-            {pTpl.trustItems.slice(0,2).map((b,i)=>(
-              <div key={i} style={{ background: pTpl.heroIsDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)", border:`1px solid ${pTpl.heroIsDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)"}`, borderRadius:8, padding:"4px 8px", fontSize:7, display:"flex", alignItems:"center", gap:3, color: pTpl.heroColor, fontWeight:600, backdropFilter:"blur(4px)" }}>
-                {b.label}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* ── Featured mini carousel ── */}
-      {!isFood && rawProds.length > 0 && (
-        <div style={{ padding:"10px 14px 6px", borderBottom:`1px solid ${pTpl.headerBorderColor}` }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
-            <span style={{ fontSize:9, fontWeight:800, color: pTpl.pageColor }}>⭐ Destacados</span>
-            <span style={{ fontSize:7, color: pc, fontWeight:600 }}>Ver todos →</span>
-          </div>
-          <div style={{ display:"flex", gap:5, overflowX:"auto" }}>
-            {rawProds.map((p,i) => (
-              <div key={i} style={{ flexShrink:0, width: isFashion ? 52 : 48, cursor:"pointer" }}>
-                <div style={{ height: isFashion ? 65 : 52, borderRadius:10, overflow:"hidden", position:"relative" }}>
-                  <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit: isFashion ? "cover" : "contain", padding: isFashion ? 0 : 3, background: pTpl.cardBg, display:"block" }} />
-                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)" }} />
-                  <div style={{ position:"absolute", bottom:2, left:3, right:3 }}>
-                    <span style={{ fontSize:6, fontWeight:800, color:"#f5c842" }}>{p.p}</span>
+        {/* Scrollable product carousel inside hero */}
+        <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:8 }} className="hide-scrollbar">
+          {rawProds.map((p,i) => (
+            <div key={i} style={{ flexShrink:0, width: mode === "mobile" ? (isFashion ? 80 : 75) : (isFashion ? 95 : 88), cursor:"pointer" }}>
+              <div style={{ height: mode === "mobile" ? (isFashion ? 100 : 80) : (isFashion ? 120 : 95), borderRadius: isFashion ? 4 : 12, overflow:"hidden", position:"relative", boxShadow:"0 4px 16px rgba(0,0,0,0.3)" }}>
+                <img src={p.img} alt={p.n} style={{ width:"100%", height:"100%", objectFit: isFashion || isFood ? "cover" : "contain", padding: (isFashion || isFood) ? 0 : 6, background: pTpl.cardBg, display:"block" }} />
+                <div style={{ position:"absolute", inset:0, background: isFood ? "linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 50%, transparent 100%)" : "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 55%)" }} />
+                {i === 0 && (
+                  <div style={{ position:"absolute", top:3, left:3, background: isFood ? "#e63946" : pc, color:"#fff", borderRadius:3, padding:"1px 4px", fontSize:5, fontWeight:800 }}>
+                    {isFood ? "🔥 -20%" : "NUEVO"}
+                  </div>
+                )}
+                <div style={{ position:"absolute", bottom:4, left:4, right:4 }}>
+                  <div style={{ fontSize:7, fontWeight:700, color:"#fff", lineHeight:1.2, marginBottom:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{p.n}</div>
+                  <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                    <span style={{ fontSize:9, fontWeight:900, color: isFood ? "#f5c842" : "#fff" }}>{p.p}</span>
+                    {isFood && <span style={{ fontSize:5, color:"rgba(255,255,255,0.7)", fontWeight:600 }}>🕐 15 min</span>}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      )}
+
+        {/* CTA button */}
+        <button style={{ background: pc, color:"#fff", border:"none", borderRadius: pTpl.heroBtnRadius, padding:"4px 12px", fontSize:8, fontWeight:700, cursor:"pointer", boxShadow:`0 4px 14px ${pc}55` }}>
+          {isFood ? "🛵 Ver menú completo →" : "Ver colección →"}
+        </button>
+      </div>
 
       {/* ── Food: delivery toggle + categories ── */}
       {isFood && (
